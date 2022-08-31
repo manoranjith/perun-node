@@ -63,6 +63,61 @@ message Payment {
     string amount = 3;
 }
 
+// Balance represents the balance of a single asset, for all the channel
+// participants.
+message Balance {
+  repeated bytes balance = 1;
+}
+
+// Balances represents the balance of all the assets, for all the channel
+// participants.
+message Balances {
+  repeated Balance balances = 1;
+}
+
+// Params represents channel.Params.
+message Params {
+  bytes id = 1;
+  uint64 challenge_duration = 2;
+  repeated bytes parts = 3;
+  bytes app = 4;
+  bytes nonce = 5;
+  bool ledger_channel = 6;
+  bool virtual_channel = 7;
+}
+
+
+// IndexMap represents the mapping of a participant indices in a sub
+// allocation or a virtual channel funding proposal to the corresponding
+// indices in the parent channel.
+message IndexMap {
+  repeated uint32 index_map = 1;
+}
+
+// SubAlloc represts a sub allocation.
+message SubAlloc {
+  bytes id = 1;
+  Balance bals = 2;
+  IndexMap index_map = 3;
+}
+
+// Allocation represents channel.Allocation.
+message Allocation {
+  repeated bytes assets = 1;
+  Balances balances = 2;
+  repeated SubAlloc locked = 3;
+}
+
+// State represents channel.State.
+message State {
+  bytes id = 1;
+  uint64 version = 2;
+  bytes app = 3;
+  Allocation allocation = 4;
+  bytes data = 5;
+  bool is_final = 6;
+}
+
 message MsgError {
     ErrorCategory category = 1;
     ErrorCode code = 2;
@@ -200,6 +255,9 @@ service Payment_API{
     rpc RespondPayChUpdate (RespondPayChUpdateReq) returns (RespondPayChUpdateResp) {}
     rpc GetPayChInfo (GetPayChInfoReq) returns (GetPayChInfoResp) {}
     rpc ClosePayCh (ClosePayChReq) returns (ClosePayChResp) {}
+
+
+    rpc Fund(FundReq) returns (FundResp){}
 }
 
 message GetConfigReq {
@@ -494,4 +552,17 @@ message ClosePayChResp {
     message MsgSuccess {
         PayChInfo closedPayChInfo = 1;
     }
+}
+
+
+message FundReq {
+    string sessionID=1;
+    Params params = 2;
+    State state = 3;
+    uint32 idx = 4;
+    Balances agreement = 5;
+}
+
+message FundResp {
+    MsgError error = 1;
 }
