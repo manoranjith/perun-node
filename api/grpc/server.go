@@ -22,7 +22,11 @@ import (
 
 	"github.com/pkg/errors"
 	grpclib "google.golang.org/grpc"
+	"perun.network/go-perun/channel"
+	pchannel "perun.network/go-perun/channel"
 	psync "polycry.pt/poly-go/sync"
+	"perun.network/go-perun/wallet"
+	pwallet "perun.network/go-perun/wallet"
 
 	"github.com/hyperledger-labs/perun-node"
 	"github.com/hyperledger-labs/perun-node/api/grpc/pb"
@@ -674,6 +678,118 @@ func (a *payChAPIServer) ClosePayCh(ctx context.Context, req *pb.ClosePayChReq) 
 		},
 	}, nil
 }
+
+// Fund wraps session.Fund.
+func (a *payChAPIServer) Fund(ctx context.Context, req *pb.FundReq) (*pb.FundResp, error) {
+	errResponse := func(err perun.APIError) *pb.FundResp {
+		return &pb.FundResp{
+			Error: toGrpcError(err),
+		}
+	}
+
+	sess, err := a.n.GetSession(req.SessionID)
+	if err != nil {
+		return errResponse(err), nil
+	}
+	req2, err2 := fromGrpcFundingReq(req)
+	if err2 != nil {
+		return errResponse(err), nil
+	}
+
+	err = sess.Fund(ctx, req2)
+	if err != nil {
+		return errResponse(err), nil
+	}
+
+	return &pb.FundResp{
+		Error: nil,
+	}, nil
+}
+
+func fromGrpcFundingReq(protoReq *pb.FundReq) (req pchannel.FundingReq, err error) {
+	if req.Params, err = fromGrpcParams(protoReq.Params); err != nil {
+		return req, err
+	}
+	if req.State, err = fromGrpcState(protoReq.State); err != nil {
+		return req, err
+	}
+
+	req.Idx = pchannel.Index(protoReq.Idx)
+	req.Agreement = fromGrpcBalances(protoReq.Agreement)
+	return req, nil
+}
+
+func fromGrpcParams(protoParams *pb.Params) (*channel.Params, error) {
+	app, err := toApp(protoParams.App)
+	if err != nil {
+		return nil, err
+	}
+	parts, err := toWalletAddrs(protoParams.Parts)
+	if err != nil {
+		return nil, errors.WithMessage(err, "parts")
+	}
+	params := channel.NewParamsUnsafe(
+		protoParams.ChallengeDuration,
+		parts,
+		app,
+		(new(big.Int)).SetBytes(protoParams.Nonce),
+		protoParams.LedgerChannel,
+		protoParams.VirtualChannel)
+
+	return params, nil
+}
+
+func toApp(protoApp []byte) (app channel.App, err error) {
+	if len(protoApp) == 0 {
+		app = channel.NoApp()
+		return app, nil
+	}
+	appDef := pwallet.NewAddress()
+	err = appDef.UnmarshalBinary(protoApp)
+	if err != nil {
+		return app, err
+	}
+	app, err = channel.Resolve(appDef)
+	return app, err
+}
+
+func toWalletAddrs(protoAddrs [][]byte) ([]pwallet.Address, error) {
+	addrs := make([]wallet.Address, len(protoAddrs))
+	for i := range protoAddrs {
+		addrs[i] = pwallet.NewAddress()
+		err := addrs[i].UnmarshalBinary(protoAddrs[i])
+		if err != nil {
+			return nil, errors.WithMessagef(err, "%d'th address", i)
+		}
+	}
+	return addrs, nil
+}
+
+func fromGrpcState(protoState *State) (state *channel.State, err error) {
+	state = &channel.State{}
+	copy(state.ID[:], protoState.Id)
+	state.Version = protoState.Version
+	state.IsFinal = protoState.IsFinal
+	allocation, err := toAllocation(protoState.Allocation)
+	if err != nil {
+		return nil, errors.WithMessage(err, "allocation")
+	}
+	state.Allocation = *allocation
+	state.App, state.Data, err = toAppAndData(protoState.App, protoState.Data)
+	return state, err
+}
+
+func fromGrpcBalances(protoBalances *pb.Balances) [][]*big.Int {
+	balances := make([][]*big.Int, len(protoBalances.GetBalances))
+	for i, protoBalance := range protoBalances {
+		balances[i] = make([]*big.Int, len(protoBalance))
+		for j, protoAmount := range protoBalance[j] {
+			balance[i][j].SetBytes(protoBalance[i][j])
+		}
+	}
+	return balances
+}
+
 
 // ToGrpcPayments is a helper function to convert slice of Payment struct
 // defined in perun-node package to slice of Payment struct defined in grpc
