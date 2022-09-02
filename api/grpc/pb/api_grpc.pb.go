@@ -8,7 +8,6 @@ package pb
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -43,6 +42,7 @@ type Payment_APIClient interface {
 	RespondPayChUpdate(ctx context.Context, in *RespondPayChUpdateReq, opts ...grpc.CallOption) (*RespondPayChUpdateResp, error)
 	GetPayChInfo(ctx context.Context, in *GetPayChInfoReq, opts ...grpc.CallOption) (*GetPayChInfoResp, error)
 	ClosePayCh(ctx context.Context, in *ClosePayChReq, opts ...grpc.CallOption) (*ClosePayChResp, error)
+	Fund(ctx context.Context, in *FundReq, opts ...grpc.CallOption) (*FundResp, error)
 }
 
 type payment_APIClient struct {
@@ -279,6 +279,15 @@ func (c *payment_APIClient) ClosePayCh(ctx context.Context, in *ClosePayChReq, o
 	return out, nil
 }
 
+func (c *payment_APIClient) Fund(ctx context.Context, in *FundReq, opts ...grpc.CallOption) (*FundResp, error) {
+	out := new(FundResp)
+	err := c.cc.Invoke(ctx, "/pb.Payment_API/Fund", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Payment_APIServer is the server API for Payment_API service.
 // All implementations must embed UnimplementedPayment_APIServer
 // for forward compatibility
@@ -303,6 +312,7 @@ type Payment_APIServer interface {
 	RespondPayChUpdate(context.Context, *RespondPayChUpdateReq) (*RespondPayChUpdateResp, error)
 	GetPayChInfo(context.Context, *GetPayChInfoReq) (*GetPayChInfoResp, error)
 	ClosePayCh(context.Context, *ClosePayChReq) (*ClosePayChResp, error)
+	Fund(context.Context, *FundReq) (*FundResp, error)
 	mustEmbedUnimplementedPayment_APIServer()
 }
 
@@ -369,6 +379,9 @@ func (UnimplementedPayment_APIServer) GetPayChInfo(context.Context, *GetPayChInf
 }
 func (UnimplementedPayment_APIServer) ClosePayCh(context.Context, *ClosePayChReq) (*ClosePayChResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ClosePayCh not implemented")
+}
+func (UnimplementedPayment_APIServer) Fund(context.Context, *FundReq) (*FundResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Fund not implemented")
 }
 func (UnimplementedPayment_APIServer) mustEmbedUnimplementedPayment_APIServer() {}
 
@@ -749,6 +762,24 @@ func _Payment_API_ClosePayCh_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Payment_API_Fund_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FundReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(Payment_APIServer).Fund(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Payment_API/Fund",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(Payment_APIServer).Fund(ctx, req.(*FundReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Payment_API_ServiceDesc is the grpc.ServiceDesc for Payment_API service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -827,6 +858,10 @@ var Payment_API_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ClosePayCh",
 			Handler:    _Payment_API_ClosePayCh_Handler,
+		},
+		{
+			MethodName: "Fund",
+			Handler:    _Payment_API_Fund_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
