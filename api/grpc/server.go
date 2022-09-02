@@ -18,15 +18,18 @@ package grpc
 
 import (
 	"context"
+	"fmt"
+	"math"
+	"math/big"
 	"net"
 
 	"github.com/pkg/errors"
 	grpclib "google.golang.org/grpc"
 	"perun.network/go-perun/channel"
 	pchannel "perun.network/go-perun/channel"
-	psync "polycry.pt/poly-go/sync"
 	"perun.network/go-perun/wallet"
 	pwallet "perun.network/go-perun/wallet"
+	psync "polycry.pt/poly-go/sync"
 
 	"github.com/hyperledger-labs/perun-node"
 	"github.com/hyperledger-labs/perun-node/api/grpc/pb"
@@ -693,12 +696,12 @@ func (a *payChAPIServer) Fund(ctx context.Context, req *pb.FundReq) (*pb.FundRes
 	}
 	req2, err2 := fromGrpcFundingReq(req)
 	if err2 != nil {
-		return errResponse(err), nil
+		return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
 	}
 
-	err = sess.Fund(ctx, req2)
-	if err != nil {
-		return errResponse(err), nil
+	err2 = sess.Fund(ctx, req2)
+	if err2 != nil {
+		return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
 	}
 
 	return &pb.FundResp{
@@ -715,7 +718,7 @@ func fromGrpcFundingReq(protoReq *pb.FundReq) (req pchannel.FundingReq, err erro
 	}
 
 	req.Idx = pchannel.Index(protoReq.Idx)
-	req.Agreement = fromGrpcBalances(protoReq.Agreement)
+	req.Agreement = fromGrpcBalances(protoReq.Agreement.Balances)
 	return req, nil
 }
 
@@ -765,7 +768,7 @@ func toWalletAddrs(protoAddrs [][]byte) ([]pwallet.Address, error) {
 	return addrs, nil
 }
 
-func fromGrpcState(protoState *State) (state *channel.State, err error) {
+func fromGrpcState(protoState *pb.State) (state *channel.State, err error) {
 	state = &channel.State{}
 	copy(state.ID[:], protoState.Id)
 	state.Version = protoState.Version
@@ -779,17 +782,87 @@ func fromGrpcState(protoState *State) (state *channel.State, err error) {
 	return state, err
 }
 
-func fromGrpcBalances(protoBalances *pb.Balances) [][]*big.Int {
-	balances := make([][]*big.Int, len(protoBalances.GetBalances))
+func toAppAndData(protoApp, protoData []byte) (app channel.App, data channel.Data, err error) {
+	if len(protoApp) == 0 {
+		app = channel.NoApp()
+		data = channel.NoData()
+		return app, data, nil
+	}
+	appDef := wallet.NewAddress()
+	err = appDef.UnmarshalBinary(protoApp)
+	if err != nil {
+		return nil, nil, err
+	}
+	app, err = channel.Resolve(appDef)
+	if err != nil {
+		return
+	}
+	data = app.NewData()
+	return app, data, data.UnmarshalBinary(protoData)
+}
+
+func toAllocation(protoAlloc *pb.Allocation) (alloc *channel.Allocation, err error) {
+	alloc = &channel.Allocation{}
+	alloc.Assets = make([]channel.Asset, len(protoAlloc.Assets))
+	for i := range protoAlloc.Assets {
+		alloc.Assets[i] = channel.NewAsset()
+		err = alloc.Assets[i].UnmarshalBinary(protoAlloc.Assets[i])
+		if err != nil {
+			return nil, errors.WithMessagef(err, "%d'th asset", i)
+		}
+	}
+	alloc.Locked = make([]channel.SubAlloc, len(protoAlloc.Locked))
+	for i := range protoAlloc.Locked {
+		alloc.Locked[i], err = fromGrpcSubAlloc(protoAlloc.Locked[i])
+		if err != nil {
+			return nil, errors.WithMessagef(err, "%d'th sub alloc", i)
+		}
+	}
+	alloc.Balances = fromGrpcBalances(protoAlloc.Balances.Balances)
+	return alloc, nil
+}
+
+func fromGrpcBalances(protoBalances []*pb.Balance) [][]*big.Int {
+	balances := make([][]*big.Int, len(protoBalances))
 	for i, protoBalance := range protoBalances {
-		balances[i] = make([]*big.Int, len(protoBalance))
-		for j, protoAmount := range protoBalance[j] {
-			balance[i][j].SetBytes(protoBalance[i][j])
+		balances[i] = make([]*big.Int, len(protoBalance.Balance))
+		for j := range protoBalance.Balance {
+			balances[i][j] = (&big.Int{}).SetBytes(protoBalance.Balance[j])
+			balances[i][j].SetBytes(protoBalance.Balance[j])
 		}
 	}
 	return balances
 }
 
+func fromGrpcSubAlloc(protoSubAlloc *pb.SubAlloc) (subAlloc channel.SubAlloc, err error) {
+	subAlloc = channel.SubAlloc{}
+	subAlloc.Bals = fromGrpcBalance(protoSubAlloc.Bals)
+	if len(protoSubAlloc.Id) != len(subAlloc.ID) {
+		return subAlloc, errors.New("sub alloc id has incorrect length")
+	}
+	copy(subAlloc.ID[:], protoSubAlloc.Id)
+	subAlloc.IndexMap, err = fromGrpcIndexMap(protoSubAlloc.IndexMap.IndexMap)
+	return subAlloc, err
+}
+
+func fromGrpcBalance(protoBalance *pb.Balance) (balance []channel.Bal) {
+	balance = make([]channel.Bal, len(protoBalance.Balance))
+	for j := range protoBalance.Balance {
+		balance[j] = new(big.Int).SetBytes(protoBalance.Balance[j])
+	}
+	return balance
+}
+
+func fromGrpcIndexMap(protoIndexMap []uint32) (indexMap []channel.Index, err error) {
+	indexMap = make([]channel.Index, len(protoIndexMap))
+	for i := range protoIndexMap {
+		if protoIndexMap[i] > math.MaxUint16 {
+			return nil, fmt.Errorf("%d'th index is invalid", i) //nolint:goerr113  // We do not want to define this as constant error.
+		}
+		indexMap[i] = channel.Index(uint16(protoIndexMap[i]))
+	}
+	return indexMap, nil
+}
 
 // ToGrpcPayments is a helper function to convert slice of Payment struct
 // defined in perun-node package to slice of Payment struct defined in grpc
