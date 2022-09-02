@@ -433,6 +433,8 @@ type SessionAPI interface {
 
 	DeployAssetERC20(tokenERC20 string) (asset string, _ APIError)
 
+	Fund(ctx context.Context, req pchannel.FundingReq) error
+
 	// This function is used internally to get a ChAPI instance.
 	// Should not be exposed via user API.
 	GetCh(string) (ChAPI, APIError)
