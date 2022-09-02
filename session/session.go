@@ -184,8 +184,19 @@ func New(cfg Config, currencyRegistry perun.ROCurrencyRegistry, contractRegistry
 		err = errors.WithMessage(err, "connecting to blockchain")
 		return nil, perun.NewAPIErrInvalidConfig(err, "chainURL", cfg.ChainURL)
 	}
-	funder := chain.NewFunder(contractRegistry.AssetETH(), user.OnChain.Addr)
-	adjudicator := chain.NewAdjudicator(cfg.Adjudicator, user.OnChain.Addr)
+
+	var funder perun.Funder
+	var adjudicator pchannel.Adjudicator
+	switch cfg.FundingType {
+	case "local":
+		funder = chain.NewFunder(contractRegistry.AssetETH(), user.OnChain.Addr)
+		adjudicator = chain.NewAdjudicator(cfg.Adjudicator, user.OnChain.Addr)
+	case "grpc":
+		// TODO: Init gprc funding client.
+	default:
+		err = errors.New("should be local or grpc")
+		return nil, perun.NewAPIErrInvalidConfig(err, "fundingType", cfg.FundingAPIKey)
+	}
 
 	chClient, apiErr := newPaymentClient(funder, adjudicator, commBackend, cfg.User.CommAddr, user.OffChain)
 	if apiErr != nil {
