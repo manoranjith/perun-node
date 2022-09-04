@@ -20,6 +20,7 @@ import (
 	"context"
 
 	pchannel "perun.network/go-perun/channel"
+	pwallet "perun.network/go-perun/wallet"
 )
 
 // Fund provides a wrapper to call the fund method on session funder.
@@ -33,4 +34,16 @@ func (s *Session) Fund(ctx context.Context, req pchannel.FundingReq) error {
 	return err
 }
 
+// RegisterAssetERC20 is a stub that always returns false. Because, the remote
+// funder does not support use of assets other than the default ERC20 asset.
+//
+// TODO: Make actual implementation.
+func (s *Session) RegisterAssetERC20(asset pchannel.Asset, token, acc pwallet.Address) bool {
+	return false
+}
+
+// IsAssetRegistered provides a wrapper to call the IsAssetRegistered method
+// on session funder.
+func (s *Session) IsAssetRegistered(asset pchannel.Asset) bool {
+	return s.funder.IsAssetRegistered(asset)
 }
