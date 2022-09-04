@@ -25,6 +25,8 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	grpclib "google.golang.org/grpc"
+	"perun.network/go-perun/channel"
 	pchannel "perun.network/go-perun/channel"
 	pclient "perun.network/go-perun/client"
 	pwallet "perun.network/go-perun/wallet"
@@ -32,6 +34,7 @@ import (
 	psync "polycry.pt/poly-go/sync"
 
 	"github.com/hyperledger-labs/perun-node"
+	"github.com/hyperledger-labs/perun-node/api/grpc/pb"
 	"github.com/hyperledger-labs/perun-node/blockchain/ethereum"
 	"github.com/hyperledger-labs/perun-node/comm/tcp"
 	"github.com/hyperledger-labs/perun-node/comm/tcp/tcptest"
@@ -49,6 +52,11 @@ const initialChRegistrySize = 10
 // test wallet backend can be set using a function defined in export_test.go.
 // Because real backend have large unlocking times and hence tests take very long.
 var walletBackend perun.WalletBackend
+
+// Singleton instance of grpc payment channel client that will be
+// used by all functions in this program. This is safe for concurrent
+// access without a mutex.
+var grpcClient pb.Payment_APIClient
 
 func init() {
 	// This can be overridden (only) in tests by calling the SetWalletBackend function.
@@ -192,7 +200,20 @@ func New(cfg Config, currencyRegistry perun.ROCurrencyRegistry, contractRegistry
 		funder = chain.NewFunder(contractRegistry.AssetETH(), user.OnChain.Addr)
 		adjudicator = chain.NewAdjudicator(cfg.Adjudicator, user.OnChain.Addr)
 	case "grpc":
-		// TODO: Init gprc funding client.
+		conn, err := grpclib.Dial(cfg.FundingURL, grpclib.WithInsecure())
+		if err != nil {
+			err = errors.WithMessage(err, "connecting to funding api")
+			return nil, perun.NewAPIErrUnknownInternal(err)
+		}
+		grpcClient = pb.NewPayment_APIClient(conn)
+		_, err = getNodeTime()
+		if err != nil {
+			err = errors.WithMessage(err, "test access of funding api")
+			return nil, perun.NewAPIErrUnknownInternal(err)
+		}
+		funder = &grpcFunder{apiKey: cfg.FundingAPIKey}
+
+		adjudicator = chain.NewAdjudicator(cfg.Adjudicator, user.OnChain.Addr)
 	default:
 		err = errors.New("should be local or grpc")
 		return nil, perun.NewAPIErrInvalidConfig(err, "fundingType", cfg.FundingAPIKey)
@@ -1177,4 +1198,186 @@ func handleChainError(chainURL, onChainTxTimeout string, err error) perun.APIErr
 	default:
 		return nil
 	}
+}
+
+func getNodeTime() (int64, error) {
+	timeReq := pb.TimeReq{}
+	timeResp, err := grpcClient.Time(context.Background(), &timeReq)
+	if err != nil {
+		return 0, err
+	}
+	return timeResp.Time, err
+}
+
+type grpcFunder struct {
+	apiKey string
+}
+
+func (f *grpcFunder) Fund(ctx context.Context, fundingReq pchannel.FundingReq) error {
+	if grpcClient == nil {
+		return perun.NewAPIErrUnknownInternal(errors.New("grpc client not initialized"))
+	}
+
+	protoReq, err := fromFundReq(fundingReq)
+	if err != nil {
+		err = errors.WithMessage(err, "constructing grpc funding request")
+		return perun.NewAPIErrUnknownInternal(err)
+	}
+	protoReq.SessionID = f.apiKey
+	resp, err := grpcClient.Fund(context.Background(), protoReq)
+	if err != nil {
+		err = errors.WithMessage(err, "sending the funding request")
+		return perun.NewAPIErrUnknownInternal(err)
+	}
+	if resp.Error != nil && resp.Error.Message != "" {
+		// TODO: Proper error handling
+		err = errors.WithMessage(err, "funding the channel")
+		return perun.NewAPIErrUnknownInternal(errors.New(resp.Error.Message))
+	}
+	return nil
+}
+
+func fromFundReq(req pchannel.FundingReq) (protoReq *pb.FundReq, err error) {
+	protoReq = &pb.FundReq{}
+
+	if protoReq.Params, err = fromParams(req.Params); err != nil {
+		return protoReq, err
+	}
+	if protoReq.State, err = fromState(req.State); err != nil {
+		return protoReq, err
+	}
+
+	protoReq.Idx = uint32(protoReq.Idx)
+	protoReq.Agreement, err = fromBalances(req.Agreement)
+	if err != nil {
+		return nil, errors.WithMessage(err, "agreement")
+	}
+	return protoReq, nil
+}
+
+func fromParams(params *pchannel.Params) (protoParams *pb.Params, err error) {
+	protoParams = &pb.Params{}
+
+	protoParams.Nonce = params.Nonce.Bytes()
+	protoParams.ChallengeDuration = params.ChallengeDuration
+	protoParams.LedgerChannel = params.LedgerChannel
+	protoParams.VirtualChannel = params.VirtualChannel
+	protoParams.Parts, err = fromWalletAddrs(params.Parts)
+	if err != nil {
+		return nil, errors.WithMessage(err, "parts")
+	}
+	protoParams.App, err = fromApp(params.App)
+	return protoParams, err
+}
+
+func fromWalletAddrs(addrs []pwallet.Address) (protoAddrs [][]byte, err error) {
+	protoAddrs = make([][]byte, len(addrs))
+	for i := range addrs {
+		protoAddrs[i], err = addrs[i].MarshalBinary()
+		if err != nil {
+			return nil, errors.WithMessagef(err, "%d'th address", i)
+		}
+	}
+	return protoAddrs, nil
+}
+
+func fromApp(app pchannel.App) (protoApp []byte, err error) {
+	if pchannel.IsNoApp(app) {
+		return []byte{}, nil
+	}
+	protoApp, err = app.Def().MarshalBinary()
+	return protoApp, err
+}
+
+func fromState(state *pchannel.State) (protoState *pb.State, err error) {
+	protoState = &pb.State{}
+
+	protoState.Id = make([]byte, len(state.ID))
+	copy(protoState.Id, state.ID[:])
+	protoState.Version = state.Version
+	protoState.IsFinal = state.IsFinal
+	protoState.Allocation, err = fromAllocation(state.Allocation)
+	if err != nil {
+		return nil, errors.WithMessage(err, "allocation")
+	}
+	protoState.App, protoState.Data, err = fromAppAndData(state.App, state.Data)
+	return protoState, err
+}
+
+func fromAllocation(alloc pchannel.Allocation) (protoAlloc *pb.Allocation, err error) {
+	protoAlloc = &pb.Allocation{}
+	protoAlloc.Assets = make([][]byte, len(alloc.Assets))
+	for i := range alloc.Assets {
+		protoAlloc.Assets[i], err = alloc.Assets[i].MarshalBinary()
+		if err != nil {
+			return nil, errors.WithMessagef(err, "%d'th asset", i)
+		}
+	}
+	locked := make([]*pb.SubAlloc, len(alloc.Locked))
+	for i := range alloc.Locked {
+		locked[i], err = fromSubAlloc(alloc.Locked[i])
+		if err != nil {
+			return nil, errors.WithMessagef(err, "%d'th sub alloc", i)
+		}
+	}
+	protoAlloc.Balances, err = fromBalances(alloc.Balances)
+	return protoAlloc, err
+}
+
+func fromBalances(balances pchannel.Balances) (protoBalances *pb.Balances, err error) {
+	protoBalances = &pb.Balances{
+		Balances: make([]*pb.Balance, len(balances)),
+	}
+	for i := range balances {
+		protoBalances.Balances[i], err = fromBalance(balances[i])
+		if err != nil {
+			return nil, errors.WithMessagef(err, "%d'th balance", i)
+		}
+	}
+	return protoBalances, nil
+}
+
+func fromBalance(balance []pchannel.Bal) (protoBalance *pb.Balance, err error) {
+	protoBalance = &pb.Balance{
+		Balance: make([][]byte, len(balance)),
+	}
+	for i := range balance {
+		if balance[i] == nil {
+			return nil, fmt.Errorf("%d'th amount is nil", i) //nolint:goerr113  // We do not want to define this as constant error.
+		}
+		if balance[i].Sign() == -1 {
+			return nil, fmt.Errorf("%d'th amount is negative", i) //nolint:goerr113  // We do not want to define this as constant error.
+		}
+		protoBalance.Balance[i] = balance[i].Bytes()
+	}
+	return protoBalance, nil
+}
+
+func fromAppAndData(app pchannel.App, data pchannel.Data) (protoApp, protoData []byte, err error) {
+	if channel.IsNoApp(app) {
+		return []byte{}, []byte{}, nil
+	}
+	protoApp, err = app.Def().MarshalBinary()
+	if err != nil {
+		return []byte{}, []byte{}, err
+	}
+	protoData, err = data.MarshalBinary()
+	return protoApp, protoData, err
+}
+
+func fromSubAlloc(subAlloc channel.SubAlloc) (protoSubAlloc *pb.SubAlloc, err error) {
+	protoSubAlloc = &pb.SubAlloc{}
+	protoSubAlloc.Id = make([]byte, len(subAlloc.ID))
+	copy(protoSubAlloc.Id, subAlloc.ID[:])
+	protoSubAlloc.IndexMap = &pb.IndexMap{IndexMap: fromIndexMap(subAlloc.IndexMap)}
+	protoSubAlloc.Bals, err = fromBalance(subAlloc.Bals)
+	return protoSubAlloc, err
+}
+
+func fromIndexMap(indexMap []channel.Index) (protoIndexMap []uint32) {
+	protoIndexMap = make([]uint32, len(indexMap))
+	for i := range indexMap {
+		protoIndexMap[i] = uint32(indexMap[i])
+	}
+	return protoIndexMap
 }
