@@ -709,6 +709,49 @@ func (a *payChAPIServer) Fund(ctx context.Context, req *pb.FundReq) (*pb.FundRes
 	}, nil
 }
 
+// RegisterAssetERC20 is a stub that always returns false. Because, the remote
+// funder does not support use of assets other than the default ERC20 asset.
+//
+// TODO: Make actual implementation.
+func (a *payChAPIServer) RegisterAssetERC20(ctx context.Context, req *pb.RegisterAssetERC20Req) (
+	*pb.RegisterAssetERC20Resp, error) {
+	return &pb.RegisterAssetERC20Resp{
+		MsgSuccess: false,
+	}, nil
+}
+
+// IsAssetRegistered wraps session.IsAssetRegistered.
+func (a *payChAPIServer) IsAssetRegistered(ctx context.Context, req *pb.IsAssetRegisteredReq) (*pb.IsAssetRegisteredResp, error) {
+	errResponse := func(err perun.APIError) *pb.IsAssetRegisteredResp {
+		return &pb.IsAssetRegisteredResp{
+			Response: &pb.IsAssetRegisteredResp_Error{
+				Error: toGrpcError(err),
+			},
+		}
+	}
+
+	sess, err := a.n.GetSession(req.SessionID)
+	if err != nil {
+		return errResponse(err), nil
+	}
+	asset := pchannel.NewAsset()
+	err2 := asset.UnmarshalBinary(req.Asset)
+	if err2 != nil {
+		err = perun.NewAPIErrInvalidArgument(err2, "asset", fmt.Sprintf("%x", req.Asset))
+		return errResponse(err), nil
+	}
+
+	isRegistered := sess.IsAssetRegistered(asset)
+
+	return &pb.IsAssetRegisteredResp{
+		Response: &pb.IsAssetRegisteredResp_MsgSuccess_{
+			MsgSuccess: &pb.IsAssetRegisteredResp_MsgSuccess{
+				IsRegistered: isRegistered,
+			},
+		},
+	}, nil
+}
+
 func fromGrpcFundingReq(protoReq *pb.FundReq) (req pchannel.FundingReq, err error) {
 	if req.Params, err = fromGrpcParams(protoReq.Params); err != nil {
 		return req, err
