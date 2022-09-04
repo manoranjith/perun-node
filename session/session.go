@@ -1237,6 +1237,65 @@ func (f *grpcFunder) Fund(ctx context.Context, fundingReq pchannel.FundingReq) e
 	return nil
 }
 
+func (f *grpcFunder) RegisterAssetERC20(asset pchannel.Asset, token, acc pwallet.Address) bool {
+	if grpcClient == nil {
+		return false
+	}
+
+	protoAsset, err := asset.MarshalBinary()
+	if err != nil {
+		return false
+	}
+	protoToken, err := token.MarshalBinary()
+	if err != nil {
+		return false
+	}
+	protoAcc, err := acc.MarshalBinary()
+	if err != nil {
+		return false
+	}
+	registerAssetERC20Req := &pb.RegisterAssetERC20Req{
+		SessionID:   f.apiKey,
+		Asset:       protoAsset,
+		TokenAddr:   fmt.Sprintf("%x", protoToken),
+		DeposiorAcc: fmt.Sprintf("%x", protoAcc),
+	}
+
+	resp, err := grpcClient.RegisterAssetERC20(context.Background(), registerAssetERC20Req)
+	if err != nil {
+		return false
+	}
+
+	return resp.MsgSuccess
+}
+
+func (f *grpcFunder) IsAssetRegistered(asset pchannel.Asset) bool {
+	if grpcClient == nil {
+		return false
+	}
+
+	protoAsset, err := asset.MarshalBinary()
+	if err != nil {
+		return false
+	}
+	isAssetRegisteredReq := &pb.IsAssetRegisteredReq{
+		SessionID: f.apiKey,
+		Asset:     protoAsset,
+	}
+
+	resp, err := grpcClient.IsAssetRegistered(context.Background(), isAssetRegisteredReq)
+	if err != nil {
+		return false
+	}
+
+	_, ok := resp.Response.(*pb.IsAssetRegisteredResp_Error)
+	if ok {
+		// TODO: Proper error handling and return it.
+		return false
+	}
+	return resp.Response.(*pb.IsAssetRegisteredResp_MsgSuccess_).MsgSuccess.IsRegistered
+}
+
 func fromFundReq(req pchannel.FundingReq) (protoReq *pb.FundReq, err error) {
 	protoReq = &pb.FundReq{}
 
