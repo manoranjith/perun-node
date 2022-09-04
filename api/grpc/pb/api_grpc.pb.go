@@ -43,6 +43,8 @@ type Payment_APIClient interface {
 	GetPayChInfo(ctx context.Context, in *GetPayChInfoReq, opts ...grpc.CallOption) (*GetPayChInfoResp, error)
 	ClosePayCh(ctx context.Context, in *ClosePayChReq, opts ...grpc.CallOption) (*ClosePayChResp, error)
 	Fund(ctx context.Context, in *FundReq, opts ...grpc.CallOption) (*FundResp, error)
+	RegisterAssetERC20(ctx context.Context, in *RegisterAssetERC20Req, opts ...grpc.CallOption) (*RegisterAssetERC20Resp, error)
+	IsAssetRegistered(ctx context.Context, in *IsAssetRegisteredReq, opts ...grpc.CallOption) (*IsAssetRegisteredResp, error)
 }
 
 type payment_APIClient struct {
@@ -288,6 +290,24 @@ func (c *payment_APIClient) Fund(ctx context.Context, in *FundReq, opts ...grpc.
 	return out, nil
 }
 
+func (c *payment_APIClient) RegisterAssetERC20(ctx context.Context, in *RegisterAssetERC20Req, opts ...grpc.CallOption) (*RegisterAssetERC20Resp, error) {
+	out := new(RegisterAssetERC20Resp)
+	err := c.cc.Invoke(ctx, "/pb.Payment_API/RegisterAssetERC20", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *payment_APIClient) IsAssetRegistered(ctx context.Context, in *IsAssetRegisteredReq, opts ...grpc.CallOption) (*IsAssetRegisteredResp, error) {
+	out := new(IsAssetRegisteredResp)
+	err := c.cc.Invoke(ctx, "/pb.Payment_API/IsAssetRegistered", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Payment_APIServer is the server API for Payment_API service.
 // All implementations must embed UnimplementedPayment_APIServer
 // for forward compatibility
@@ -313,6 +333,8 @@ type Payment_APIServer interface {
 	GetPayChInfo(context.Context, *GetPayChInfoReq) (*GetPayChInfoResp, error)
 	ClosePayCh(context.Context, *ClosePayChReq) (*ClosePayChResp, error)
 	Fund(context.Context, *FundReq) (*FundResp, error)
+	RegisterAssetERC20(context.Context, *RegisterAssetERC20Req) (*RegisterAssetERC20Resp, error)
+	IsAssetRegistered(context.Context, *IsAssetRegisteredReq) (*IsAssetRegisteredResp, error)
 	mustEmbedUnimplementedPayment_APIServer()
 }
 
@@ -382,6 +404,12 @@ func (UnimplementedPayment_APIServer) ClosePayCh(context.Context, *ClosePayChReq
 }
 func (UnimplementedPayment_APIServer) Fund(context.Context, *FundReq) (*FundResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Fund not implemented")
+}
+func (UnimplementedPayment_APIServer) RegisterAssetERC20(context.Context, *RegisterAssetERC20Req) (*RegisterAssetERC20Resp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterAssetERC20 not implemented")
+}
+func (UnimplementedPayment_APIServer) IsAssetRegistered(context.Context, *IsAssetRegisteredReq) (*IsAssetRegisteredResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method IsAssetRegistered not implemented")
 }
 func (UnimplementedPayment_APIServer) mustEmbedUnimplementedPayment_APIServer() {}
 
@@ -780,6 +808,42 @@ func _Payment_API_Fund_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Payment_API_RegisterAssetERC20_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterAssetERC20Req)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(Payment_APIServer).RegisterAssetERC20(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Payment_API/RegisterAssetERC20",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(Payment_APIServer).RegisterAssetERC20(ctx, req.(*RegisterAssetERC20Req))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Payment_API_IsAssetRegistered_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IsAssetRegisteredReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(Payment_APIServer).IsAssetRegistered(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Payment_API/IsAssetRegistered",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(Payment_APIServer).IsAssetRegistered(ctx, req.(*IsAssetRegisteredReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Payment_API_ServiceDesc is the grpc.ServiceDesc for Payment_API service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -862,6 +926,14 @@ var Payment_API_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Fund",
 			Handler:    _Payment_API_Fund_Handler,
+		},
+		{
+			MethodName: "RegisterAssetERC20",
+			Handler:    _Payment_API_RegisterAssetERC20_Handler,
+		},
+		{
+			MethodName: "IsAssetRegistered",
+			Handler:    _Payment_API_IsAssetRegistered_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
