@@ -29,6 +29,8 @@ import (
 	pchannel "perun.network/go-perun/channel"
 	pclient "perun.network/go-perun/client"
 	pwallet "perun.network/go-perun/wallet"
+	pwatcher "perun.network/go-perun/watcher"
+	plocal "perun.network/go-perun/watcher/local"
 	pwire "perun.network/go-perun/wire"
 	psync "polycry.pt/poly-go/sync"
 
@@ -126,8 +128,9 @@ type (
 		timeoutCfg timeoutConfig
 		chainURL   string // used for annotating error messages.
 
-		chain  perun.ChainBackend
-		funder perun.Funder
+		chain   perun.ChainBackend
+		funder  perun.Funder
+		watcher pwatcher.Watcher
 
 		chs              *chRegistry
 		contractRegistry perun.ContractRegistry
@@ -218,7 +221,16 @@ func New(cfg Config, currencyRegistry perun.ROCurrencyRegistry, contractRegistry
 		return nil, perun.NewAPIErrInvalidConfig(err, "fundingType", cfg.FundingAPIKey)
 	}
 
-	chClient, apiErr := newPaymentClient(funder, adjudicator, commBackend, cfg.User.CommAddr, user.OffChain)
+	var watcher pwatcher.Watcher
+	switch cfg.WatcherType {
+	case "local":
+		watcher, err = plocal.NewWatcher(adjudicator)
+		if err != nil {
+			return nil, perun.NewAPIErrUnknownInternal(errors.WithMessage(err, "initializing watcher"))
+		}
+	}
+
+	chClient, apiErr := newPaymentClient(funder, adjudicator, watcher, commBackend, cfg.User.CommAddr, user.OffChain)
 	if apiErr != nil {
 		return nil, apiErr
 	}
@@ -242,6 +254,7 @@ func New(cfg Config, currencyRegistry perun.ROCurrencyRegistry, contractRegistry
 		idProvider:           idProvider,
 		chain:                chain,
 		funder:               funder,
+		watcher:              watcher,
 		chs:                  newChRegistry(initialChRegistrySize),
 		contractRegistry:     contractRegistry,
 		currencyRegistry:     currencyRegistry,
