@@ -258,6 +258,8 @@ service Payment_API{
 
 
     rpc Fund(FundReq) returns (FundResp){}
+    rpc RegisterAssetERC20(RegisterAssetERC20Req) returns (RegisterAssetERC20Resp){}
+    rpc IsAssetRegistered(IsAssetRegisteredReq) returns (IsAssetRegisteredResp){}
 }
 
 message GetConfigReq {
@@ -565,4 +567,30 @@ message FundReq {
 
 message FundResp {
     MsgError error = 1;
+}
+
+message RegisterAssetERC20Req {
+    string sessionID=1;
+    bytes asset = 2;
+    string tokenAddr = 3;
+    string deposiorAcc = 4;
+}
+
+message RegisterAssetERC20Resp {
+    bool msgSuccess = 1;
+}
+
+message IsAssetRegisteredReq {
+    string sessionID=1;
+    bytes asset = 2;
+}
+
+message IsAssetRegisteredResp {
+    oneof response{
+        MsgSuccess msgSuccess = 1;
+        MsgError error = 2;
+    }
+    message MsgSuccess {
+        bool isRegistered = 1;
+    }
 }
