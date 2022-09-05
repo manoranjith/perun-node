@@ -45,6 +45,8 @@ type Payment_APIClient interface {
 	Fund(ctx context.Context, in *FundReq, opts ...grpc.CallOption) (*FundResp, error)
 	RegisterAssetERC20(ctx context.Context, in *RegisterAssetERC20Req, opts ...grpc.CallOption) (*RegisterAssetERC20Resp, error)
 	IsAssetRegistered(ctx context.Context, in *IsAssetRegisteredReq, opts ...grpc.CallOption) (*IsAssetRegisteredResp, error)
+	StartWatchingLedgerChannel(ctx context.Context, opts ...grpc.CallOption) (Payment_API_StartWatchingLedgerChannelClient, error)
+	StopWatching(ctx context.Context, in *StopWatchingReq, opts ...grpc.CallOption) (*StopWatchingResp, error)
 }
 
 type payment_APIClient struct {
@@ -308,6 +310,46 @@ func (c *payment_APIClient) IsAssetRegistered(ctx context.Context, in *IsAssetRe
 	return out, nil
 }
 
+func (c *payment_APIClient) StartWatchingLedgerChannel(ctx context.Context, opts ...grpc.CallOption) (Payment_API_StartWatchingLedgerChannelClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Payment_API_ServiceDesc.Streams[2], "/pb.Payment_API/StartWatchingLedgerChannel", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &payment_APIStartWatchingLedgerChannelClient{stream}
+	return x, nil
+}
+
+type Payment_API_StartWatchingLedgerChannelClient interface {
+	Send(*StartWatchingLedgerChannelReq) error
+	Recv() (*StartWatchingLedgerChannelResp, error)
+	grpc.ClientStream
+}
+
+type payment_APIStartWatchingLedgerChannelClient struct {
+	grpc.ClientStream
+}
+
+func (x *payment_APIStartWatchingLedgerChannelClient) Send(m *StartWatchingLedgerChannelReq) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *payment_APIStartWatchingLedgerChannelClient) Recv() (*StartWatchingLedgerChannelResp, error) {
+	m := new(StartWatchingLedgerChannelResp)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *payment_APIClient) StopWatching(ctx context.Context, in *StopWatchingReq, opts ...grpc.CallOption) (*StopWatchingResp, error) {
+	out := new(StopWatchingResp)
+	err := c.cc.Invoke(ctx, "/pb.Payment_API/StopWatching", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Payment_APIServer is the server API for Payment_API service.
 // All implementations must embed UnimplementedPayment_APIServer
 // for forward compatibility
@@ -335,6 +377,8 @@ type Payment_APIServer interface {
 	Fund(context.Context, *FundReq) (*FundResp, error)
 	RegisterAssetERC20(context.Context, *RegisterAssetERC20Req) (*RegisterAssetERC20Resp, error)
 	IsAssetRegistered(context.Context, *IsAssetRegisteredReq) (*IsAssetRegisteredResp, error)
+	StartWatchingLedgerChannel(Payment_API_StartWatchingLedgerChannelServer) error
+	StopWatching(context.Context, *StopWatchingReq) (*StopWatchingResp, error)
 	mustEmbedUnimplementedPayment_APIServer()
 }
 
@@ -410,6 +454,12 @@ func (UnimplementedPayment_APIServer) RegisterAssetERC20(context.Context, *Regis
 }
 func (UnimplementedPayment_APIServer) IsAssetRegistered(context.Context, *IsAssetRegisteredReq) (*IsAssetRegisteredResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IsAssetRegistered not implemented")
+}
+func (UnimplementedPayment_APIServer) StartWatchingLedgerChannel(Payment_API_StartWatchingLedgerChannelServer) error {
+	return status.Errorf(codes.Unimplemented, "method StartWatchingLedgerChannel not implemented")
+}
+func (UnimplementedPayment_APIServer) StopWatching(context.Context, *StopWatchingReq) (*StopWatchingResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StopWatching not implemented")
 }
 func (UnimplementedPayment_APIServer) mustEmbedUnimplementedPayment_APIServer() {}
 
@@ -844,6 +894,50 @@ func _Payment_API_IsAssetRegistered_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Payment_API_StartWatchingLedgerChannel_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(Payment_APIServer).StartWatchingLedgerChannel(&payment_APIStartWatchingLedgerChannelServer{stream})
+}
+
+type Payment_API_StartWatchingLedgerChannelServer interface {
+	Send(*StartWatchingLedgerChannelResp) error
+	Recv() (*StartWatchingLedgerChannelReq, error)
+	grpc.ServerStream
+}
+
+type payment_APIStartWatchingLedgerChannelServer struct {
+	grpc.ServerStream
+}
+
+func (x *payment_APIStartWatchingLedgerChannelServer) Send(m *StartWatchingLedgerChannelResp) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *payment_APIStartWatchingLedgerChannelServer) Recv() (*StartWatchingLedgerChannelReq, error) {
+	m := new(StartWatchingLedgerChannelReq)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _Payment_API_StopWatching_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StopWatchingReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(Payment_APIServer).StopWatching(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Payment_API/StopWatching",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(Payment_APIServer).StopWatching(ctx, req.(*StopWatchingReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Payment_API_ServiceDesc is the grpc.ServiceDesc for Payment_API service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -935,6 +1029,10 @@ var Payment_API_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "IsAssetRegistered",
 			Handler:    _Payment_API_IsAssetRegistered_Handler,
 		},
+		{
+			MethodName: "StopWatching",
+			Handler:    _Payment_API_StopWatching_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -946,6 +1044,12 @@ var Payment_API_ServiceDesc = grpc.ServiceDesc{
 			StreamName:    "SubPayChUpdates",
 			Handler:       _Payment_API_SubPayChUpdates_Handler,
 			ServerStreams: true,
+		},
+		{
+			StreamName:    "StartWatchingLedgerChannel",
+			Handler:       _Payment_API_StartWatchingLedgerChannel_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "api.proto",
