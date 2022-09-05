@@ -21,8 +21,10 @@ import (
 	"math/big"
 	"time"
 
+	"perun.network/go-perun/channel"
 	pchannel "perun.network/go-perun/channel"
 	pwallet "perun.network/go-perun/wallet"
+	pwatcher "perun.network/go-perun/watcher"
 	pwire "perun.network/go-perun/wire"
 	pnet "perun.network/go-perun/wire/net"
 )
@@ -440,6 +442,12 @@ type SessionAPI interface {
 	Withdraw(context.Context, AdjudicatorReq, pchannel.StateMap) APIError
 	Progress(context.Context, ProgressReq) APIError
 	Subscribe(context.Context, pchannel.ID) (pchannel.AdjudicatorSubscription, APIError)
+
+	StartWatchingLedgerChannel(context.Context, channel.SignedState) (
+		pwatcher.StatesPub, pwatcher.AdjudicatorSub, APIError)
+	StartWatchingSubChannel(ctx context.Context, parent channel.ID, signedState pchannel.SignedState) (
+		pwatcher.StatesPub, pwatcher.AdjudicatorSub, APIError)
+	StopWatching(context.Context, pchannel.ID) APIError
 
 	// This function is used internally to get a ChAPI instance.
 	// Should not be exposed via user API.
