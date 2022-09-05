@@ -54,11 +54,6 @@ const initialChRegistrySize = 10
 // Because real backend have large unlocking times and hence tests take very long.
 var walletBackend perun.WalletBackend
 
-// Singleton instance of grpc payment channel client that will be
-// used by all functions in this program. This is safe for concurrent
-// access without a mutex.
-var grpcClient pb.Payment_APIClient
-
 func init() {
 	// This can be overridden (only) in tests by calling the SetWalletBackend function.
 	walletBackend = ethereum.NewWalletBackend()
@@ -207,13 +202,16 @@ func New(cfg Config, currencyRegistry perun.ROCurrencyRegistry, contractRegistry
 			err = errors.WithMessage(err, "connecting to funding api")
 			return nil, perun.NewAPIErrUnknownInternal(err)
 		}
-		grpcClient = pb.NewPayment_APIClient(conn)
-		_, err = getNodeTime()
+		funderClient := pb.NewPayment_APIClient(conn)
+		_, err = getNodeTime(funderClient) // Test the API.
 		if err != nil {
 			err = errors.WithMessage(err, "test access of funding api")
 			return nil, perun.NewAPIErrUnknownInternal(err)
 		}
-		funder = &grpcFunder{apiKey: cfg.FundingAPIKey}
+		funder = &grpcFunder{
+			apiKey: cfg.FundingAPIKey,
+			client: funderClient,
+		}
 
 		adjudicator = chain.NewAdjudicator(cfg.Adjudicator, user.OnChain.Addr)
 	default:
@@ -1212,9 +1210,9 @@ func handleChainError(chainURL, onChainTxTimeout string, err error) perun.APIErr
 	}
 }
 
-func getNodeTime() (int64, error) {
+func getNodeTime(client pb.Payment_APIClient) (int64, error) {
 	timeReq := pb.TimeReq{}
-	timeResp, err := grpcClient.Time(context.Background(), &timeReq)
+	timeResp, err := client.Time(context.Background(), &timeReq)
 	if err != nil {
 		return 0, err
 	}

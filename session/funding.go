@@ -55,20 +55,17 @@ func (s *Session) IsAssetRegistered(asset pchannel.Asset) bool {
 
 type grpcFunder struct {
 	apiKey string
+	client pb.Payment_APIClient
 }
 
 func (f *grpcFunder) Fund(ctx context.Context, fundingReq pchannel.FundingReq) error {
-	if grpcClient == nil {
-		return perun.NewAPIErrUnknownInternal(errors.New("grpc client not initialized"))
-	}
-
 	protoReq, err := fromFundReq(fundingReq)
 	if err != nil {
 		err = errors.WithMessage(err, "constructing grpc funding request")
 		return perun.NewAPIErrUnknownInternal(err)
 	}
 	protoReq.SessionID = f.apiKey
-	resp, err := grpcClient.Fund(context.Background(), protoReq)
+	resp, err := f.client.Fund(context.Background(), protoReq)
 	if err != nil {
 		err = errors.WithMessage(err, "sending the funding request")
 		return perun.NewAPIErrUnknownInternal(err)
@@ -82,10 +79,6 @@ func (f *grpcFunder) Fund(ctx context.Context, fundingReq pchannel.FundingReq) e
 }
 
 func (f *grpcFunder) RegisterAssetERC20(asset pchannel.Asset, token, acc pwallet.Address) bool {
-	if grpcClient == nil {
-		return false
-	}
-
 	protoAsset, err := asset.MarshalBinary()
 	if err != nil {
 		return false
@@ -105,7 +98,7 @@ func (f *grpcFunder) RegisterAssetERC20(asset pchannel.Asset, token, acc pwallet
 		DeposiorAcc: fmt.Sprintf("%x", protoAcc),
 	}
 
-	resp, err := grpcClient.RegisterAssetERC20(context.Background(), registerAssetERC20Req)
+	resp, err := f.client.RegisterAssetERC20(context.Background(), registerAssetERC20Req)
 	if err != nil {
 		return false
 	}
@@ -114,10 +107,6 @@ func (f *grpcFunder) RegisterAssetERC20(asset pchannel.Asset, token, acc pwallet
 }
 
 func (f *grpcFunder) IsAssetRegistered(asset pchannel.Asset) bool {
-	if grpcClient == nil {
-		return false
-	}
-
 	protoAsset, err := asset.MarshalBinary()
 	if err != nil {
 		return false
@@ -127,7 +116,7 @@ func (f *grpcFunder) IsAssetRegistered(asset pchannel.Asset) bool {
 		Asset:     protoAsset,
 	}
 
-	resp, err := grpcClient.IsAssetRegistered(context.Background(), isAssetRegisteredReq)
+	resp, err := f.client.IsAssetRegistered(context.Background(), isAssetRegisteredReq)
 	if err != nil {
 		return false
 	}
