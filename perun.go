@@ -21,8 +21,10 @@ import (
 	"math/big"
 	"time"
 
+	"perun.network/go-perun/channel"
 	pchannel "perun.network/go-perun/channel"
 	pwallet "perun.network/go-perun/wallet"
+	pwatcher "perun.network/go-perun/watcher"
 	pwire "perun.network/go-perun/wire"
 	pnet "perun.network/go-perun/wire/net"
 )
@@ -434,6 +436,12 @@ type SessionAPI interface {
 	DeployAssetERC20(tokenERC20 string) (asset string, _ APIError)
 
 	Funder
+
+	StartWatchingLedgerChannel(context.Context, channel.SignedState) (
+		pwatcher.StatesPub, pwatcher.AdjudicatorSub, error)
+	StartWatchingSubChannel(ctx context.Context, parent channel.ID, signedState pchannel.SignedState) (
+		pwatcher.StatesPub, pwatcher.AdjudicatorSub, error)
+	StopWatching(context.Context, pchannel.ID) error
 
 	// This function is used internally to get a ChAPI instance.
 	// Should not be exposed via user API.
