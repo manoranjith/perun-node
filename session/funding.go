@@ -31,12 +31,17 @@ import (
 // Fund provides a wrapper to call the fund method on session funder.
 // On-chain wallet can be direcly used without additional locks,
 // because the methods on wallet are concurrency safe by themselves.
-func (s *Session) Fund(ctx context.Context, req pchannel.FundingReq) error {
+func (s *Session) Fund(ctx context.Context, req pchannel.FundingReq) perun.APIError {
+	s.WithField("method", "Fund").Infof("\nReceived request with params %+v", req)
 	err := s.funder.Fund(ctx, req)
-	if err == nil {
-		s.user.OnChain.Wallet.IncrementUsage(s.user.OnChain.Addr)
+	if err != nil {
+		apiErr := perun.NewAPIErrUnknownInternal(err)
+		s.WithFields(perun.APIErrAsMap("Fund", apiErr)).Error(apiErr.Message())
+		return apiErr
 	}
-	return err
+	s.user.OnChain.Wallet.IncrementUsage(s.user.OnChain.Addr)
+	s.WithField("method", "Fudn").Infof("Funded channel successfully: %+v", req.State.ID)
+	return nil
 }
 
 // RegisterAssetERC20 is a stub that always returns false. Because, the remote
@@ -44,13 +49,19 @@ func (s *Session) Fund(ctx context.Context, req pchannel.FundingReq) error {
 //
 // TODO: Make actual implementation.
 func (s *Session) RegisterAssetERC20(asset pchannel.Asset, token, acc pwallet.Address) bool {
+	s.WithField("method", "RegisterAssetERC20").Infof("\nReceived request with params %+v, %+v, %+v",
+		asset, token, acc)
+	s.WithField("method", "RegisterAssetERC20").Infof("Unimplemented method. Hence returning false")
 	return false
 }
 
 // IsAssetRegistered provides a wrapper to call the IsAssetRegistered method
 // on session funder.
 func (s *Session) IsAssetRegistered(asset pchannel.Asset) bool {
-	return s.funder.IsAssetRegistered(asset)
+	s.WithField("method", "IsAssetRegistered").Infof("\nReceived request with params %+v", asset)
+	isAssetRegistered := s.funder.IsAssetRegistered(asset)
+	s.WithField("method", "IsAssetRegistered").Infof("Response: %v", isAssetRegistered)
+	return isAssetRegistered
 }
 
 type grpcFunder struct {
