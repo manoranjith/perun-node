@@ -5468,6 +5468,728 @@ func (x *StopWatchingResp) GetError() *MsgError {
 	return nil
 }
 
+type AdjudicatorReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Params    *Params      `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
+	Acc       []byte       `protobuf:"bytes,2,opt,name=acc,proto3" json:"acc,omitempty"`
+	Tx        *Transaction `protobuf:"bytes,3,opt,name=tx,proto3" json:"tx,omitempty"`
+	Idx       uint32       `protobuf:"varint,4,opt,name=idx,proto3" json:"idx,omitempty"`
+	Secondary bool         `protobuf:"varint,5,opt,name=secondary,proto3" json:"secondary,omitempty"`
+}
+
+func (x *AdjudicatorReq) Reset() {
+	*x = AdjudicatorReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[79]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *AdjudicatorReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AdjudicatorReq) ProtoMessage() {}
+
+func (x *AdjudicatorReq) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[79]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AdjudicatorReq.ProtoReflect.Descriptor instead.
+func (*AdjudicatorReq) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{79}
+}
+
+func (x *AdjudicatorReq) GetParams() *Params {
+	if x != nil {
+		return x.Params
+	}
+	return nil
+}
+
+func (x *AdjudicatorReq) GetAcc() []byte {
+	if x != nil {
+		return x.Acc
+	}
+	return nil
+}
+
+func (x *AdjudicatorReq) GetTx() *Transaction {
+	if x != nil {
+		return x.Tx
+	}
+	return nil
+}
+
+func (x *AdjudicatorReq) GetIdx() uint32 {
+	if x != nil {
+		return x.Idx
+	}
+	return 0
+}
+
+func (x *AdjudicatorReq) GetSecondary() bool {
+	if x != nil {
+		return x.Secondary
+	}
+	return false
+}
+
+type Transaction struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	State *State   `protobuf:"bytes,1,opt,name=state,proto3" json:"state,omitempty"`
+	Sigs  [][]byte `protobuf:"bytes,2,rep,name=sigs,proto3" json:"sigs,omitempty"`
+}
+
+func (x *Transaction) Reset() {
+	*x = Transaction{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[80]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Transaction) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Transaction) ProtoMessage() {}
+
+func (x *Transaction) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[80]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Transaction.ProtoReflect.Descriptor instead.
+func (*Transaction) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{80}
+}
+
+func (x *Transaction) GetState() *State {
+	if x != nil {
+		return x.State
+	}
+	return nil
+}
+
+func (x *Transaction) GetSigs() [][]byte {
+	if x != nil {
+		return x.Sigs
+	}
+	return nil
+}
+
+type SignedState struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Params *Params  `protobuf:"bytes,1,opt,name=params,proto3" json:"params,omitempty"`
+	State  *State   `protobuf:"bytes,2,opt,name=state,proto3" json:"state,omitempty"`
+	Sigs   [][]byte `protobuf:"bytes,3,rep,name=sigs,proto3" json:"sigs,omitempty"`
+}
+
+func (x *SignedState) Reset() {
+	*x = SignedState{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[81]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SignedState) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SignedState) ProtoMessage() {}
+
+func (x *SignedState) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[81]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SignedState.ProtoReflect.Descriptor instead.
+func (*SignedState) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{81}
+}
+
+func (x *SignedState) GetParams() *Params {
+	if x != nil {
+		return x.Params
+	}
+	return nil
+}
+
+func (x *SignedState) GetState() *State {
+	if x != nil {
+		return x.State
+	}
+	return nil
+}
+
+func (x *SignedState) GetSigs() [][]byte {
+	if x != nil {
+		return x.Sigs
+	}
+	return nil
+}
+
+type RegisterReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	AdjReq       *AdjudicatorReq `protobuf:"bytes,1,opt,name=adjReq,proto3" json:"adjReq,omitempty"`
+	SignedStates []*SignedState  `protobuf:"bytes,2,rep,name=signedStates,proto3" json:"signedStates,omitempty"`
+}
+
+func (x *RegisterReq) Reset() {
+	*x = RegisterReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[82]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RegisterReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RegisterReq) ProtoMessage() {}
+
+func (x *RegisterReq) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[82]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RegisterReq.ProtoReflect.Descriptor instead.
+func (*RegisterReq) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{82}
+}
+
+func (x *RegisterReq) GetAdjReq() *AdjudicatorReq {
+	if x != nil {
+		return x.AdjReq
+	}
+	return nil
+}
+
+func (x *RegisterReq) GetSignedStates() []*SignedState {
+	if x != nil {
+		return x.SignedStates
+	}
+	return nil
+}
+
+type RegisterResp struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Error *MsgError `protobuf:"bytes,1,opt,name=error,proto3" json:"error,omitempty"`
+}
+
+func (x *RegisterResp) Reset() {
+	*x = RegisterResp{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[83]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RegisterResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RegisterResp) ProtoMessage() {}
+
+func (x *RegisterResp) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[83]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RegisterResp.ProtoReflect.Descriptor instead.
+func (*RegisterResp) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{83}
+}
+
+func (x *RegisterResp) GetError() *MsgError {
+	if x != nil {
+		return x.Error
+	}
+	return nil
+}
+
+type StateMap struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id    []byte `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	State *State `protobuf:"bytes,2,opt,name=state,proto3" json:"state,omitempty"`
+}
+
+func (x *StateMap) Reset() {
+	*x = StateMap{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[84]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *StateMap) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StateMap) ProtoMessage() {}
+
+func (x *StateMap) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[84]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StateMap.ProtoReflect.Descriptor instead.
+func (*StateMap) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{84}
+}
+
+func (x *StateMap) GetId() []byte {
+	if x != nil {
+		return x.Id
+	}
+	return nil
+}
+
+func (x *StateMap) GetState() *State {
+	if x != nil {
+		return x.State
+	}
+	return nil
+}
+
+type WithdrawReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	AdjReq   *AdjudicatorReq `protobuf:"bytes,1,opt,name=adjReq,proto3" json:"adjReq,omitempty"`
+	StateMap []*StateMap     `protobuf:"bytes,2,rep,name=stateMap,proto3" json:"stateMap,omitempty"`
+}
+
+func (x *WithdrawReq) Reset() {
+	*x = WithdrawReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[85]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *WithdrawReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WithdrawReq) ProtoMessage() {}
+
+func (x *WithdrawReq) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[85]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WithdrawReq.ProtoReflect.Descriptor instead.
+func (*WithdrawReq) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{85}
+}
+
+func (x *WithdrawReq) GetAdjReq() *AdjudicatorReq {
+	if x != nil {
+		return x.AdjReq
+	}
+	return nil
+}
+
+func (x *WithdrawReq) GetStateMap() []*StateMap {
+	if x != nil {
+		return x.StateMap
+	}
+	return nil
+}
+
+type WithdrawResp struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Error *MsgError `protobuf:"bytes,1,opt,name=error,proto3" json:"error,omitempty"`
+}
+
+func (x *WithdrawResp) Reset() {
+	*x = WithdrawResp{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[86]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *WithdrawResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*WithdrawResp) ProtoMessage() {}
+
+func (x *WithdrawResp) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[86]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use WithdrawResp.ProtoReflect.Descriptor instead.
+func (*WithdrawResp) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{86}
+}
+
+func (x *WithdrawResp) GetError() *MsgError {
+	if x != nil {
+		return x.Error
+	}
+	return nil
+}
+
+type ProgressReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	AdjReq   *AdjudicatorReq `protobuf:"bytes,1,opt,name=adjReq,proto3" json:"adjReq,omitempty"`
+	NewState *State          `protobuf:"bytes,2,opt,name=newState,proto3" json:"newState,omitempty"`
+	Sig      []byte          `protobuf:"bytes,3,opt,name=sig,proto3" json:"sig,omitempty"`
+}
+
+func (x *ProgressReq) Reset() {
+	*x = ProgressReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[87]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ProgressReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ProgressReq) ProtoMessage() {}
+
+func (x *ProgressReq) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[87]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ProgressReq.ProtoReflect.Descriptor instead.
+func (*ProgressReq) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{87}
+}
+
+func (x *ProgressReq) GetAdjReq() *AdjudicatorReq {
+	if x != nil {
+		return x.AdjReq
+	}
+	return nil
+}
+
+func (x *ProgressReq) GetNewState() *State {
+	if x != nil {
+		return x.NewState
+	}
+	return nil
+}
+
+func (x *ProgressReq) GetSig() []byte {
+	if x != nil {
+		return x.Sig
+	}
+	return nil
+}
+
+type ProgressResp struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Error *MsgError `protobuf:"bytes,1,opt,name=error,proto3" json:"error,omitempty"`
+}
+
+func (x *ProgressResp) Reset() {
+	*x = ProgressResp{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[88]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ProgressResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ProgressResp) ProtoMessage() {}
+
+func (x *ProgressResp) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[88]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ProgressResp.ProtoReflect.Descriptor instead.
+func (*ProgressResp) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{88}
+}
+
+func (x *ProgressResp) GetError() *MsgError {
+	if x != nil {
+		return x.Error
+	}
+	return nil
+}
+
+type SubscribeReq struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ChID []byte `protobuf:"bytes,1,opt,name=chID,proto3" json:"chID,omitempty"`
+}
+
+func (x *SubscribeReq) Reset() {
+	*x = SubscribeReq{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[89]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SubscribeReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SubscribeReq) ProtoMessage() {}
+
+func (x *SubscribeReq) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[89]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SubscribeReq.ProtoReflect.Descriptor instead.
+func (*SubscribeReq) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{89}
+}
+
+func (x *SubscribeReq) GetChID() []byte {
+	if x != nil {
+		return x.ChID
+	}
+	return nil
+}
+
+type SubscribeResp struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	// Types that are assignable to Response:
+	//
+	//	*SubscribeResp_RegisteredEvent
+	//	*SubscribeResp_ProgressedEvent
+	//	*SubscribeResp_ConcludedEvent
+	//	*SubscribeResp_Error
+	Response isSubscribeResp_Response `protobuf_oneof:"response"`
+}
+
+func (x *SubscribeResp) Reset() {
+	*x = SubscribeResp{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_api_proto_msgTypes[90]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *SubscribeResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SubscribeResp) ProtoMessage() {}
+
+func (x *SubscribeResp) ProtoReflect() protoreflect.Message {
+	mi := &file_api_proto_msgTypes[90]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SubscribeResp.ProtoReflect.Descriptor instead.
+func (*SubscribeResp) Descriptor() ([]byte, []int) {
+	return file_api_proto_rawDescGZIP(), []int{90}
+}
+
+func (m *SubscribeResp) GetResponse() isSubscribeResp_Response {
+	if m != nil {
+		return m.Response
+	}
+	return nil
+}
+
+func (x *SubscribeResp) GetRegisteredEvent() *RegisteredEvent {
+	if x, ok := x.GetResponse().(*SubscribeResp_RegisteredEvent); ok {
+		return x.RegisteredEvent
+	}
+	return nil
+}
+
+func (x *SubscribeResp) GetProgressedEvent() *ProgressedEvent {
+	if x, ok := x.GetResponse().(*SubscribeResp_ProgressedEvent); ok {
+		return x.ProgressedEvent
+	}
+	return nil
+}
+
+func (x *SubscribeResp) GetConcludedEvent() *ConcludedEvent {
+	if x, ok := x.GetResponse().(*SubscribeResp_ConcludedEvent); ok {
+		return x.ConcludedEvent
+	}
+	return nil
+}
+
+func (x *SubscribeResp) GetError() *MsgError {
+	if x, ok := x.GetResponse().(*SubscribeResp_Error); ok {
+		return x.Error
+	}
+	return nil
+}
+
+type isSubscribeResp_Response interface {
+	isSubscribeResp_Response()
+}
+
+type SubscribeResp_RegisteredEvent struct {
+	RegisteredEvent *RegisteredEvent `protobuf:"bytes,1,opt,name=registeredEvent,proto3,oneof"`
+}
+
+type SubscribeResp_ProgressedEvent struct {
+	ProgressedEvent *ProgressedEvent `protobuf:"bytes,2,opt,name=progressedEvent,proto3,oneof"`
+}
+
+type SubscribeResp_ConcludedEvent struct {
+	ConcludedEvent *ConcludedEvent `protobuf:"bytes,3,opt,name=concludedEvent,proto3,oneof"`
+}
+
+type SubscribeResp_Error struct {
+	Error *MsgError `protobuf:"bytes,4,opt,name=error,proto3,oneof"`
+}
+
+func (*SubscribeResp_RegisteredEvent) isSubscribeResp_Response() {}
+
+func (*SubscribeResp_ProgressedEvent) isSubscribeResp_Response() {}
+
+func (*SubscribeResp_ConcludedEvent) isSubscribeResp_Response() {}
+
+func (*SubscribeResp_Error) isSubscribeResp_Response() {}
+
 type BalInfoBal struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -5479,7 +6201,7 @@ type BalInfoBal struct {
 func (x *BalInfoBal) Reset() {
 	*x = BalInfoBal{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[79]
+		mi := &file_api_proto_msgTypes[91]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5492,7 +6214,7 @@ func (x *BalInfoBal) String() string {
 func (*BalInfoBal) ProtoMessage() {}
 
 func (x *BalInfoBal) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[79]
+	mi := &file_api_proto_msgTypes[91]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5527,7 +6249,7 @@ type OpenSessionResp_MsgSuccess struct {
 func (x *OpenSessionResp_MsgSuccess) Reset() {
 	*x = OpenSessionResp_MsgSuccess{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[80]
+		mi := &file_api_proto_msgTypes[92]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5540,7 +6262,7 @@ func (x *OpenSessionResp_MsgSuccess) String() string {
 func (*OpenSessionResp_MsgSuccess) ProtoMessage() {}
 
 func (x *OpenSessionResp_MsgSuccess) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[80]
+	mi := &file_api_proto_msgTypes[92]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5581,7 +6303,7 @@ type RegisterCurrencyResp_MsgSuccess struct {
 func (x *RegisterCurrencyResp_MsgSuccess) Reset() {
 	*x = RegisterCurrencyResp_MsgSuccess{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[81]
+		mi := &file_api_proto_msgTypes[93]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5594,7 +6316,7 @@ func (x *RegisterCurrencyResp_MsgSuccess) String() string {
 func (*RegisterCurrencyResp_MsgSuccess) ProtoMessage() {}
 
 func (x *RegisterCurrencyResp_MsgSuccess) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[81]
+	mi := &file_api_proto_msgTypes[93]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5628,7 +6350,7 @@ type AddPeerIDResp_MsgSuccess struct {
 func (x *AddPeerIDResp_MsgSuccess) Reset() {
 	*x = AddPeerIDResp_MsgSuccess{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[82]
+		mi := &file_api_proto_msgTypes[94]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5641,7 +6363,7 @@ func (x *AddPeerIDResp_MsgSuccess) String() string {
 func (*AddPeerIDResp_MsgSuccess) ProtoMessage() {}
 
 func (x *AddPeerIDResp_MsgSuccess) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[82]
+	mi := &file_api_proto_msgTypes[94]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5675,7 +6397,7 @@ type GetPeerIDResp_MsgSuccess struct {
 func (x *GetPeerIDResp_MsgSuccess) Reset() {
 	*x = GetPeerIDResp_MsgSuccess{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[83]
+		mi := &file_api_proto_msgTypes[95]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5688,7 +6410,7 @@ func (x *GetPeerIDResp_MsgSuccess) String() string {
 func (*GetPeerIDResp_MsgSuccess) ProtoMessage() {}
 
 func (x *GetPeerIDResp_MsgSuccess) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[83]
+	mi := &file_api_proto_msgTypes[95]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5722,7 +6444,7 @@ type OpenPayChResp_MsgSuccess struct {
 func (x *OpenPayChResp_MsgSuccess) Reset() {
 	*x = OpenPayChResp_MsgSuccess{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[84]
+		mi := &file_api_proto_msgTypes[96]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5735,7 +6457,7 @@ func (x *OpenPayChResp_MsgSuccess) String() string {
 func (*OpenPayChResp_MsgSuccess) ProtoMessage() {}
 
 func (x *OpenPayChResp_MsgSuccess) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[84]
+	mi := &file_api_proto_msgTypes[96]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5769,7 +6491,7 @@ type GetPayChsInfoResp_MsgSuccess struct {
 func (x *GetPayChsInfoResp_MsgSuccess) Reset() {
 	*x = GetPayChsInfoResp_MsgSuccess{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[85]
+		mi := &file_api_proto_msgTypes[97]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5782,7 +6504,7 @@ func (x *GetPayChsInfoResp_MsgSuccess) String() string {
 func (*GetPayChsInfoResp_MsgSuccess) ProtoMessage() {}
 
 func (x *GetPayChsInfoResp_MsgSuccess) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[85]
+	mi := &file_api_proto_msgTypes[97]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5819,7 +6541,7 @@ type SubPayChProposalsResp_Notify struct {
 func (x *SubPayChProposalsResp_Notify) Reset() {
 	*x = SubPayChProposalsResp_Notify{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[86]
+		mi := &file_api_proto_msgTypes[98]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5832,7 +6554,7 @@ func (x *SubPayChProposalsResp_Notify) String() string {
 func (*SubPayChProposalsResp_Notify) ProtoMessage() {}
 
 func (x *SubPayChProposalsResp_Notify) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[86]
+	mi := &file_api_proto_msgTypes[98]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5887,7 +6609,7 @@ type UnsubPayChProposalsResp_MsgSuccess struct {
 func (x *UnsubPayChProposalsResp_MsgSuccess) Reset() {
 	*x = UnsubPayChProposalsResp_MsgSuccess{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[87]
+		mi := &file_api_proto_msgTypes[99]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5900,7 +6622,7 @@ func (x *UnsubPayChProposalsResp_MsgSuccess) String() string {
 func (*UnsubPayChProposalsResp_MsgSuccess) ProtoMessage() {}
 
 func (x *UnsubPayChProposalsResp_MsgSuccess) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[87]
+	mi := &file_api_proto_msgTypes[99]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5934,7 +6656,7 @@ type RespondPayChProposalResp_MsgSuccess struct {
 func (x *RespondPayChProposalResp_MsgSuccess) Reset() {
 	*x = RespondPayChProposalResp_MsgSuccess{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[88]
+		mi := &file_api_proto_msgTypes[100]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5947,7 +6669,7 @@ func (x *RespondPayChProposalResp_MsgSuccess) String() string {
 func (*RespondPayChProposalResp_MsgSuccess) ProtoMessage() {}
 
 func (x *RespondPayChProposalResp_MsgSuccess) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[88]
+	mi := &file_api_proto_msgTypes[100]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5981,7 +6703,7 @@ type CloseSessionResp_MsgSuccess struct {
 func (x *CloseSessionResp_MsgSuccess) Reset() {
 	*x = CloseSessionResp_MsgSuccess{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[89]
+		mi := &file_api_proto_msgTypes[101]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -5994,7 +6716,7 @@ func (x *CloseSessionResp_MsgSuccess) String() string {
 func (*CloseSessionResp_MsgSuccess) ProtoMessage() {}
 
 func (x *CloseSessionResp_MsgSuccess) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[89]
+	mi := &file_api_proto_msgTypes[101]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6028,7 +6750,7 @@ type DeployAssetERC20Resp_MsgSuccess struct {
 func (x *DeployAssetERC20Resp_MsgSuccess) Reset() {
 	*x = DeployAssetERC20Resp_MsgSuccess{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[90]
+		mi := &file_api_proto_msgTypes[102]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6041,7 +6763,7 @@ func (x *DeployAssetERC20Resp_MsgSuccess) String() string {
 func (*DeployAssetERC20Resp_MsgSuccess) ProtoMessage() {}
 
 func (x *DeployAssetERC20Resp_MsgSuccess) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[90]
+	mi := &file_api_proto_msgTypes[102]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6075,7 +6797,7 @@ type SendPayChUpdateResp_MsgSuccess struct {
 func (x *SendPayChUpdateResp_MsgSuccess) Reset() {
 	*x = SendPayChUpdateResp_MsgSuccess{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[91]
+		mi := &file_api_proto_msgTypes[103]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6088,7 +6810,7 @@ func (x *SendPayChUpdateResp_MsgSuccess) String() string {
 func (*SendPayChUpdateResp_MsgSuccess) ProtoMessage() {}
 
 func (x *SendPayChUpdateResp_MsgSuccess) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[91]
+	mi := &file_api_proto_msgTypes[103]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6126,7 +6848,7 @@ type SubPayChUpdatesResp_Notify struct {
 func (x *SubPayChUpdatesResp_Notify) Reset() {
 	*x = SubPayChUpdatesResp_Notify{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[92]
+		mi := &file_api_proto_msgTypes[104]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6139,7 +6861,7 @@ func (x *SubPayChUpdatesResp_Notify) String() string {
 func (*SubPayChUpdatesResp_Notify) ProtoMessage() {}
 
 func (x *SubPayChUpdatesResp_Notify) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[92]
+	mi := &file_api_proto_msgTypes[104]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6201,7 +6923,7 @@ type UnsubPayChUpdatesResp_MsgSuccess struct {
 func (x *UnsubPayChUpdatesResp_MsgSuccess) Reset() {
 	*x = UnsubPayChUpdatesResp_MsgSuccess{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[93]
+		mi := &file_api_proto_msgTypes[105]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6214,7 +6936,7 @@ func (x *UnsubPayChUpdatesResp_MsgSuccess) String() string {
 func (*UnsubPayChUpdatesResp_MsgSuccess) ProtoMessage() {}
 
 func (x *UnsubPayChUpdatesResp_MsgSuccess) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[93]
+	mi := &file_api_proto_msgTypes[105]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6248,7 +6970,7 @@ type RespondPayChUpdateResp_MsgSuccess struct {
 func (x *RespondPayChUpdateResp_MsgSuccess) Reset() {
 	*x = RespondPayChUpdateResp_MsgSuccess{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[94]
+		mi := &file_api_proto_msgTypes[106]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6261,7 +6983,7 @@ func (x *RespondPayChUpdateResp_MsgSuccess) String() string {
 func (*RespondPayChUpdateResp_MsgSuccess) ProtoMessage() {}
 
 func (x *RespondPayChUpdateResp_MsgSuccess) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[94]
+	mi := &file_api_proto_msgTypes[106]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6295,7 +7017,7 @@ type GetPayChInfoResp_MsgSuccess struct {
 func (x *GetPayChInfoResp_MsgSuccess) Reset() {
 	*x = GetPayChInfoResp_MsgSuccess{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[95]
+		mi := &file_api_proto_msgTypes[107]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6308,7 +7030,7 @@ func (x *GetPayChInfoResp_MsgSuccess) String() string {
 func (*GetPayChInfoResp_MsgSuccess) ProtoMessage() {}
 
 func (x *GetPayChInfoResp_MsgSuccess) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[95]
+	mi := &file_api_proto_msgTypes[107]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6342,7 +7064,7 @@ type ClosePayChResp_MsgSuccess struct {
 func (x *ClosePayChResp_MsgSuccess) Reset() {
 	*x = ClosePayChResp_MsgSuccess{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[96]
+		mi := &file_api_proto_msgTypes[108]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6355,7 +7077,7 @@ func (x *ClosePayChResp_MsgSuccess) String() string {
 func (*ClosePayChResp_MsgSuccess) ProtoMessage() {}
 
 func (x *ClosePayChResp_MsgSuccess) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[96]
+	mi := &file_api_proto_msgTypes[108]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6389,7 +7111,7 @@ type IsAssetRegisteredResp_MsgSuccess struct {
 func (x *IsAssetRegisteredResp_MsgSuccess) Reset() {
 	*x = IsAssetRegisteredResp_MsgSuccess{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[97]
+		mi := &file_api_proto_msgTypes[109]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6402,7 +7124,7 @@ func (x *IsAssetRegisteredResp_MsgSuccess) String() string {
 func (*IsAssetRegisteredResp_MsgSuccess) ProtoMessage() {}
 
 func (x *IsAssetRegisteredResp_MsgSuccess) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[97]
+	mi := &file_api_proto_msgTypes[109]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6437,7 +7159,7 @@ type AdjudicatorEventBase_Timeout struct {
 func (x *AdjudicatorEventBase_Timeout) Reset() {
 	*x = AdjudicatorEventBase_Timeout{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_api_proto_msgTypes[98]
+		mi := &file_api_proto_msgTypes[110]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -6450,7 +7172,7 @@ func (x *AdjudicatorEventBase_Timeout) String() string {
 func (*AdjudicatorEventBase_Timeout) ProtoMessage() {}
 
 func (x *AdjudicatorEventBase_Timeout) ProtoReflect() protoreflect.Message {
-	mi := &file_api_proto_msgTypes[98]
+	mi := &file_api_proto_msgTypes[110]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7151,7 +7873,80 @@ var file_api_proto_rawDesc = []byte{
 	0x53, 0x74, 0x6f, 0x70, 0x57, 0x61, 0x74, 0x63, 0x68, 0x69, 0x6e, 0x67, 0x52, 0x65, 0x73, 0x70,
 	0x12, 0x22, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
 	0x0c, 0x2e, 0x70, 0x62, 0x2e, 0x4d, 0x73, 0x67, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x52, 0x05, 0x65,
-	0x72, 0x72, 0x6f, 0x72, 0x2a, 0x5c, 0x0a, 0x0d, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x43, 0x61, 0x74,
+	0x72, 0x72, 0x6f, 0x72, 0x22, 0x97, 0x01, 0x0a, 0x0e, 0x41, 0x64, 0x6a, 0x75, 0x64, 0x69, 0x63,
+	0x61, 0x74, 0x6f, 0x72, 0x52, 0x65, 0x71, 0x12, 0x22, 0x0a, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d,
+	0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0a, 0x2e, 0x70, 0x62, 0x2e, 0x50, 0x61, 0x72,
+	0x61, 0x6d, 0x73, 0x52, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x10, 0x0a, 0x03, 0x61,
+	0x63, 0x63, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x03, 0x61, 0x63, 0x63, 0x12, 0x1f, 0x0a,
+	0x02, 0x74, 0x78, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x70, 0x62, 0x2e, 0x54,
+	0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x02, 0x74, 0x78, 0x12, 0x10,
+	0x0a, 0x03, 0x69, 0x64, 0x78, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0d, 0x52, 0x03, 0x69, 0x64, 0x78,
+	0x12, 0x1c, 0x0a, 0x09, 0x73, 0x65, 0x63, 0x6f, 0x6e, 0x64, 0x61, 0x72, 0x79, 0x18, 0x05, 0x20,
+	0x01, 0x28, 0x08, 0x52, 0x09, 0x73, 0x65, 0x63, 0x6f, 0x6e, 0x64, 0x61, 0x72, 0x79, 0x22, 0x42,
+	0x0a, 0x0b, 0x54, 0x72, 0x61, 0x6e, 0x73, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x1f, 0x0a,
+	0x05, 0x73, 0x74, 0x61, 0x74, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x70,
+	0x62, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x52, 0x05, 0x73, 0x74, 0x61, 0x74, 0x65, 0x12, 0x12,
+	0x0a, 0x04, 0x73, 0x69, 0x67, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0c, 0x52, 0x04, 0x73, 0x69,
+	0x67, 0x73, 0x22, 0x66, 0x0a, 0x0b, 0x53, 0x69, 0x67, 0x6e, 0x65, 0x64, 0x53, 0x74, 0x61, 0x74,
+	0x65, 0x12, 0x22, 0x0a, 0x06, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x0a, 0x2e, 0x70, 0x62, 0x2e, 0x50, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x52, 0x06, 0x70,
+	0x61, 0x72, 0x61, 0x6d, 0x73, 0x12, 0x1f, 0x0a, 0x05, 0x73, 0x74, 0x61, 0x74, 0x65, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x70, 0x62, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x52,
+	0x05, 0x73, 0x74, 0x61, 0x74, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x73, 0x69, 0x67, 0x73, 0x18, 0x03,
+	0x20, 0x03, 0x28, 0x0c, 0x52, 0x04, 0x73, 0x69, 0x67, 0x73, 0x22, 0x6e, 0x0a, 0x0b, 0x52, 0x65,
+	0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x71, 0x12, 0x2a, 0x0a, 0x06, 0x61, 0x64, 0x6a,
+	0x52, 0x65, 0x71, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x70, 0x62, 0x2e, 0x41,
+	0x64, 0x6a, 0x75, 0x64, 0x69, 0x63, 0x61, 0x74, 0x6f, 0x72, 0x52, 0x65, 0x71, 0x52, 0x06, 0x61,
+	0x64, 0x6a, 0x52, 0x65, 0x71, 0x12, 0x33, 0x0a, 0x0c, 0x73, 0x69, 0x67, 0x6e, 0x65, 0x64, 0x53,
+	0x74, 0x61, 0x74, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x70, 0x62,
+	0x2e, 0x53, 0x69, 0x67, 0x6e, 0x65, 0x64, 0x53, 0x74, 0x61, 0x74, 0x65, 0x52, 0x0c, 0x73, 0x69,
+	0x67, 0x6e, 0x65, 0x64, 0x53, 0x74, 0x61, 0x74, 0x65, 0x73, 0x22, 0x32, 0x0a, 0x0c, 0x52, 0x65,
+	0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x12, 0x22, 0x0a, 0x05, 0x65, 0x72,
+	0x72, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0c, 0x2e, 0x70, 0x62, 0x2e, 0x4d,
+	0x73, 0x67, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x52, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x22, 0x3b,
+	0x0a, 0x08, 0x53, 0x74, 0x61, 0x74, 0x65, 0x4d, 0x61, 0x70, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x02, 0x69, 0x64, 0x12, 0x1f, 0x0a, 0x05, 0x73, 0x74,
+	0x61, 0x74, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x09, 0x2e, 0x70, 0x62, 0x2e, 0x53,
+	0x74, 0x61, 0x74, 0x65, 0x52, 0x05, 0x73, 0x74, 0x61, 0x74, 0x65, 0x22, 0x63, 0x0a, 0x0b, 0x57,
+	0x69, 0x74, 0x68, 0x64, 0x72, 0x61, 0x77, 0x52, 0x65, 0x71, 0x12, 0x2a, 0x0a, 0x06, 0x61, 0x64,
+	0x6a, 0x52, 0x65, 0x71, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x70, 0x62, 0x2e,
+	0x41, 0x64, 0x6a, 0x75, 0x64, 0x69, 0x63, 0x61, 0x74, 0x6f, 0x72, 0x52, 0x65, 0x71, 0x52, 0x06,
+	0x61, 0x64, 0x6a, 0x52, 0x65, 0x71, 0x12, 0x28, 0x0a, 0x08, 0x73, 0x74, 0x61, 0x74, 0x65, 0x4d,
+	0x61, 0x70, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0c, 0x2e, 0x70, 0x62, 0x2e, 0x53, 0x74,
+	0x61, 0x74, 0x65, 0x4d, 0x61, 0x70, 0x52, 0x08, 0x73, 0x74, 0x61, 0x74, 0x65, 0x4d, 0x61, 0x70,
+	0x22, 0x32, 0x0a, 0x0c, 0x57, 0x69, 0x74, 0x68, 0x64, 0x72, 0x61, 0x77, 0x52, 0x65, 0x73, 0x70,
+	0x12, 0x22, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
+	0x0c, 0x2e, 0x70, 0x62, 0x2e, 0x4d, 0x73, 0x67, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x52, 0x05, 0x65,
+	0x72, 0x72, 0x6f, 0x72, 0x22, 0x72, 0x0a, 0x0b, 0x50, 0x72, 0x6f, 0x67, 0x72, 0x65, 0x73, 0x73,
+	0x52, 0x65, 0x71, 0x12, 0x2a, 0x0a, 0x06, 0x61, 0x64, 0x6a, 0x52, 0x65, 0x71, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x70, 0x62, 0x2e, 0x41, 0x64, 0x6a, 0x75, 0x64, 0x69, 0x63,
+	0x61, 0x74, 0x6f, 0x72, 0x52, 0x65, 0x71, 0x52, 0x06, 0x61, 0x64, 0x6a, 0x52, 0x65, 0x71, 0x12,
+	0x25, 0x0a, 0x08, 0x6e, 0x65, 0x77, 0x53, 0x74, 0x61, 0x74, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x09, 0x2e, 0x70, 0x62, 0x2e, 0x53, 0x74, 0x61, 0x74, 0x65, 0x52, 0x08, 0x6e, 0x65,
+	0x77, 0x53, 0x74, 0x61, 0x74, 0x65, 0x12, 0x10, 0x0a, 0x03, 0x73, 0x69, 0x67, 0x18, 0x03, 0x20,
+	0x01, 0x28, 0x0c, 0x52, 0x03, 0x73, 0x69, 0x67, 0x22, 0x32, 0x0a, 0x0c, 0x50, 0x72, 0x6f, 0x67,
+	0x72, 0x65, 0x73, 0x73, 0x52, 0x65, 0x73, 0x70, 0x12, 0x22, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f,
+	0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0c, 0x2e, 0x70, 0x62, 0x2e, 0x4d, 0x73, 0x67,
+	0x45, 0x72, 0x72, 0x6f, 0x72, 0x52, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x22, 0x22, 0x0a, 0x0c,
+	0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x52, 0x65, 0x71, 0x12, 0x12, 0x0a, 0x04,
+	0x63, 0x68, 0x49, 0x44, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0c, 0x52, 0x04, 0x63, 0x68, 0x49, 0x44,
+	0x22, 0x81, 0x02, 0x0a, 0x0d, 0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x52, 0x65,
+	0x73, 0x70, 0x12, 0x3f, 0x0a, 0x0f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64,
+	0x45, 0x76, 0x65, 0x6e, 0x74, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x70, 0x62,
+	0x2e, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74,
+	0x48, 0x00, 0x52, 0x0f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x45, 0x76,
+	0x65, 0x6e, 0x74, 0x12, 0x3f, 0x0a, 0x0f, 0x70, 0x72, 0x6f, 0x67, 0x72, 0x65, 0x73, 0x73, 0x65,
+	0x64, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x13, 0x2e, 0x70,
+	0x62, 0x2e, 0x50, 0x72, 0x6f, 0x67, 0x72, 0x65, 0x73, 0x73, 0x65, 0x64, 0x45, 0x76, 0x65, 0x6e,
+	0x74, 0x48, 0x00, 0x52, 0x0f, 0x70, 0x72, 0x6f, 0x67, 0x72, 0x65, 0x73, 0x73, 0x65, 0x64, 0x45,
+	0x76, 0x65, 0x6e, 0x74, 0x12, 0x3c, 0x0a, 0x0e, 0x63, 0x6f, 0x6e, 0x63, 0x6c, 0x75, 0x64, 0x65,
+	0x64, 0x45, 0x76, 0x65, 0x6e, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x12, 0x2e, 0x70,
+	0x62, 0x2e, 0x43, 0x6f, 0x6e, 0x63, 0x6c, 0x75, 0x64, 0x65, 0x64, 0x45, 0x76, 0x65, 0x6e, 0x74,
+	0x48, 0x00, 0x52, 0x0e, 0x63, 0x6f, 0x6e, 0x63, 0x6c, 0x75, 0x64, 0x65, 0x64, 0x45, 0x76, 0x65,
+	0x6e, 0x74, 0x12, 0x24, 0x0a, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x18, 0x04, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x0c, 0x2e, 0x70, 0x62, 0x2e, 0x4d, 0x73, 0x67, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x48,
+	0x00, 0x52, 0x05, 0x65, 0x72, 0x72, 0x6f, 0x72, 0x42, 0x0a, 0x0a, 0x08, 0x72, 0x65, 0x73, 0x70,
+	0x6f, 0x6e, 0x73, 0x65, 0x2a, 0x5c, 0x0a, 0x0d, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x43, 0x61, 0x74,
 	0x65, 0x67, 0x6f, 0x72, 0x79, 0x12, 0x14, 0x0a, 0x10, 0x50, 0x61, 0x72, 0x74, 0x69, 0x63, 0x69,
 	0x70, 0x61, 0x6e, 0x74, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x10, 0x00, 0x12, 0x0f, 0x0a, 0x0b, 0x43,
 	0x6c, 0x69, 0x65, 0x6e, 0x74, 0x45, 0x72, 0x72, 0x6f, 0x72, 0x10, 0x01, 0x12, 0x11, 0x0a, 0x0d,
@@ -7179,7 +7974,7 @@ var file_api_proto_rawDesc = []byte{
 	0x65, 0x64, 0x4f, 0x75, 0x74, 0x10, 0xad, 0x02, 0x12, 0x19, 0x0a, 0x14, 0x45, 0x72, 0x72, 0x43,
 	0x68, 0x61, 0x69, 0x6e, 0x4e, 0x6f, 0x74, 0x52, 0x65, 0x61, 0x63, 0x68, 0x61, 0x62, 0x6c, 0x65,
 	0x10, 0xae, 0x02, 0x12, 0x17, 0x0a, 0x12, 0x45, 0x72, 0x72, 0x55, 0x6e, 0x6b, 0x6e, 0x6f, 0x77,
-	0x6e, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x10, 0x91, 0x03, 0x32, 0xea, 0x0c, 0x0a,
+	0x6e, 0x49, 0x6e, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x10, 0x91, 0x03, 0x32, 0xb1, 0x0e, 0x0a,
 	0x0b, 0x50, 0x61, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x5f, 0x41, 0x50, 0x49, 0x12, 0x32, 0x0a, 0x09,
 	0x47, 0x65, 0x74, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x10, 0x2e, 0x70, 0x62, 0x2e, 0x47,
 	0x65, 0x74, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x52, 0x65, 0x71, 0x1a, 0x11, 0x2e, 0x70, 0x62,
@@ -7282,8 +8077,20 @@ var file_api_proto_rawDesc = []byte{
 	0x53, 0x74, 0x6f, 0x70, 0x57, 0x61, 0x74, 0x63, 0x68, 0x69, 0x6e, 0x67, 0x12, 0x13, 0x2e, 0x70,
 	0x62, 0x2e, 0x53, 0x74, 0x6f, 0x70, 0x57, 0x61, 0x74, 0x63, 0x68, 0x69, 0x6e, 0x67, 0x52, 0x65,
 	0x71, 0x1a, 0x14, 0x2e, 0x70, 0x62, 0x2e, 0x53, 0x74, 0x6f, 0x70, 0x57, 0x61, 0x74, 0x63, 0x68,
-	0x69, 0x6e, 0x67, 0x52, 0x65, 0x73, 0x70, 0x22, 0x00, 0x42, 0x06, 0x5a, 0x04, 0x2e, 0x3b, 0x70,
-	0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x69, 0x6e, 0x67, 0x52, 0x65, 0x73, 0x70, 0x22, 0x00, 0x12, 0x2f, 0x0a, 0x08, 0x52, 0x65, 0x67,
+	0x69, 0x73, 0x74, 0x65, 0x72, 0x12, 0x0f, 0x2e, 0x70, 0x62, 0x2e, 0x52, 0x65, 0x67, 0x69, 0x73,
+	0x74, 0x65, 0x72, 0x52, 0x65, 0x71, 0x1a, 0x10, 0x2e, 0x70, 0x62, 0x2e, 0x52, 0x65, 0x67, 0x69,
+	0x73, 0x74, 0x65, 0x72, 0x52, 0x65, 0x73, 0x70, 0x22, 0x00, 0x12, 0x2f, 0x0a, 0x08, 0x57, 0x69,
+	0x74, 0x68, 0x64, 0x72, 0x61, 0x77, 0x12, 0x0f, 0x2e, 0x70, 0x62, 0x2e, 0x57, 0x69, 0x74, 0x68,
+	0x64, 0x72, 0x61, 0x77, 0x52, 0x65, 0x71, 0x1a, 0x10, 0x2e, 0x70, 0x62, 0x2e, 0x57, 0x69, 0x74,
+	0x68, 0x64, 0x72, 0x61, 0x77, 0x52, 0x65, 0x73, 0x70, 0x22, 0x00, 0x12, 0x2f, 0x0a, 0x08, 0x50,
+	0x72, 0x6f, 0x67, 0x72, 0x65, 0x73, 0x73, 0x12, 0x0f, 0x2e, 0x70, 0x62, 0x2e, 0x50, 0x72, 0x6f,
+	0x67, 0x72, 0x65, 0x73, 0x73, 0x52, 0x65, 0x71, 0x1a, 0x10, 0x2e, 0x70, 0x62, 0x2e, 0x50, 0x72,
+	0x6f, 0x67, 0x72, 0x65, 0x73, 0x73, 0x52, 0x65, 0x73, 0x70, 0x22, 0x00, 0x12, 0x32, 0x0a, 0x09,
+	0x53, 0x75, 0x62, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65, 0x12, 0x0f, 0x2e, 0x70, 0x62, 0x2e, 0x50,
+	0x72, 0x6f, 0x67, 0x72, 0x65, 0x73, 0x73, 0x52, 0x65, 0x71, 0x1a, 0x10, 0x2e, 0x70, 0x62, 0x2e,
+	0x50, 0x72, 0x6f, 0x67, 0x72, 0x65, 0x73, 0x73, 0x52, 0x65, 0x73, 0x70, 0x22, 0x00, 0x30, 0x01,
+	0x42, 0x06, 0x5a, 0x04, 0x2e, 0x3b, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -7299,7 +8106,7 @@ func file_api_proto_rawDescGZIP() []byte {
 }
 
 var file_api_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_api_proto_msgTypes = make([]protoimpl.MessageInfo, 99)
+var file_api_proto_msgTypes = make([]protoimpl.MessageInfo, 111)
 var file_api_proto_goTypes = []interface{}{
 	(ErrorCategory)(0), // 0: pb.ErrorCategory
 	(ErrorCode)(0),     // 1: pb.ErrorCode
@@ -7384,29 +8191,41 @@ var file_api_proto_goTypes = []interface{}{
 	(*ConcludedEvent)(nil),                       // 80: pb.ConcludedEvent
 	(*StopWatchingReq)(nil),                      // 81: pb.StopWatchingReq
 	(*StopWatchingResp)(nil),                     // 82: pb.StopWatchingResp
-	(*BalInfoBal)(nil),                           // 83: pb.BalInfo.bal
-	(*OpenSessionResp_MsgSuccess)(nil),           // 84: pb.OpenSessionResp.MsgSuccess
-	(*RegisterCurrencyResp_MsgSuccess)(nil),      // 85: pb.RegisterCurrencyResp.MsgSuccess
-	(*AddPeerIDResp_MsgSuccess)(nil),             // 86: pb.AddPeerIDResp.MsgSuccess
-	(*GetPeerIDResp_MsgSuccess)(nil),             // 87: pb.GetPeerIDResp.MsgSuccess
-	(*OpenPayChResp_MsgSuccess)(nil),             // 88: pb.OpenPayChResp.MsgSuccess
-	(*GetPayChsInfoResp_MsgSuccess)(nil),         // 89: pb.GetPayChsInfoResp.MsgSuccess
-	(*SubPayChProposalsResp_Notify)(nil),         // 90: pb.SubPayChProposalsResp.Notify
-	(*UnsubPayChProposalsResp_MsgSuccess)(nil),   // 91: pb.UnsubPayChProposalsResp.MsgSuccess
-	(*RespondPayChProposalResp_MsgSuccess)(nil),  // 92: pb.RespondPayChProposalResp.MsgSuccess
-	(*CloseSessionResp_MsgSuccess)(nil),          // 93: pb.CloseSessionResp.MsgSuccess
-	(*DeployAssetERC20Resp_MsgSuccess)(nil),      // 94: pb.DeployAssetERC20Resp.MsgSuccess
-	(*SendPayChUpdateResp_MsgSuccess)(nil),       // 95: pb.SendPayChUpdateResp.MsgSuccess
-	(*SubPayChUpdatesResp_Notify)(nil),           // 96: pb.SubPayChUpdatesResp.Notify
-	(*UnsubPayChUpdatesResp_MsgSuccess)(nil),     // 97: pb.UnsubPayChUpdatesResp.MsgSuccess
-	(*RespondPayChUpdateResp_MsgSuccess)(nil),    // 98: pb.RespondPayChUpdateResp.MsgSuccess
-	(*GetPayChInfoResp_MsgSuccess)(nil),          // 99: pb.GetPayChInfoResp.MsgSuccess
-	(*ClosePayChResp_MsgSuccess)(nil),            // 100: pb.ClosePayChResp.MsgSuccess
-	(*IsAssetRegisteredResp_MsgSuccess)(nil),     // 101: pb.IsAssetRegisteredResp.MsgSuccess
-	(*AdjudicatorEventBase_Timeout)(nil),         // 102: pb.AdjudicatorEventBase.Timeout
+	(*AdjudicatorReq)(nil),                       // 83: pb.AdjudicatorReq
+	(*Transaction)(nil),                          // 84: pb.Transaction
+	(*SignedState)(nil),                          // 85: pb.SignedState
+	(*RegisterReq)(nil),                          // 86: pb.RegisterReq
+	(*RegisterResp)(nil),                         // 87: pb.RegisterResp
+	(*StateMap)(nil),                             // 88: pb.StateMap
+	(*WithdrawReq)(nil),                          // 89: pb.WithdrawReq
+	(*WithdrawResp)(nil),                         // 90: pb.WithdrawResp
+	(*ProgressReq)(nil),                          // 91: pb.ProgressReq
+	(*ProgressResp)(nil),                         // 92: pb.ProgressResp
+	(*SubscribeReq)(nil),                         // 93: pb.SubscribeReq
+	(*SubscribeResp)(nil),                        // 94: pb.SubscribeResp
+	(*BalInfoBal)(nil),                           // 95: pb.BalInfo.bal
+	(*OpenSessionResp_MsgSuccess)(nil),           // 96: pb.OpenSessionResp.MsgSuccess
+	(*RegisterCurrencyResp_MsgSuccess)(nil),      // 97: pb.RegisterCurrencyResp.MsgSuccess
+	(*AddPeerIDResp_MsgSuccess)(nil),             // 98: pb.AddPeerIDResp.MsgSuccess
+	(*GetPeerIDResp_MsgSuccess)(nil),             // 99: pb.GetPeerIDResp.MsgSuccess
+	(*OpenPayChResp_MsgSuccess)(nil),             // 100: pb.OpenPayChResp.MsgSuccess
+	(*GetPayChsInfoResp_MsgSuccess)(nil),         // 101: pb.GetPayChsInfoResp.MsgSuccess
+	(*SubPayChProposalsResp_Notify)(nil),         // 102: pb.SubPayChProposalsResp.Notify
+	(*UnsubPayChProposalsResp_MsgSuccess)(nil),   // 103: pb.UnsubPayChProposalsResp.MsgSuccess
+	(*RespondPayChProposalResp_MsgSuccess)(nil),  // 104: pb.RespondPayChProposalResp.MsgSuccess
+	(*CloseSessionResp_MsgSuccess)(nil),          // 105: pb.CloseSessionResp.MsgSuccess
+	(*DeployAssetERC20Resp_MsgSuccess)(nil),      // 106: pb.DeployAssetERC20Resp.MsgSuccess
+	(*SendPayChUpdateResp_MsgSuccess)(nil),       // 107: pb.SendPayChUpdateResp.MsgSuccess
+	(*SubPayChUpdatesResp_Notify)(nil),           // 108: pb.SubPayChUpdatesResp.Notify
+	(*UnsubPayChUpdatesResp_MsgSuccess)(nil),     // 109: pb.UnsubPayChUpdatesResp.MsgSuccess
+	(*RespondPayChUpdateResp_MsgSuccess)(nil),    // 110: pb.RespondPayChUpdateResp.MsgSuccess
+	(*GetPayChInfoResp_MsgSuccess)(nil),          // 111: pb.GetPayChInfoResp.MsgSuccess
+	(*ClosePayChResp_MsgSuccess)(nil),            // 112: pb.ClosePayChResp.MsgSuccess
+	(*IsAssetRegisteredResp_MsgSuccess)(nil),     // 113: pb.IsAssetRegisteredResp.MsgSuccess
+	(*AdjudicatorEventBase_Timeout)(nil),         // 114: pb.AdjudicatorEventBase.Timeout
 }
 var file_api_proto_depIdxs = []int32{
-	83,  // 0: pb.BalInfo.bals:type_name -> pb.BalInfo.bal
+	95,  // 0: pb.BalInfo.bals:type_name -> pb.BalInfo.bal
 	5,   // 1: pb.PayChInfo.balInfo:type_name -> pb.BalInfo
 	8,   // 2: pb.Balances.balances:type_name -> pb.Balance
 	8,   // 3: pb.SubAlloc.bals:type_name -> pb.Balance
@@ -7430,48 +8249,48 @@ var file_api_proto_depIdxs = []int32{
 	28,  // 21: pb.MsgError.ErrInfoChainNotReachable:type_name -> pb.ErrInfoChainNotReachable
 	6,   // 22: pb.ErrInfoFailedPreCondUnclosedChs.chs:type_name -> pb.PayChInfo
 	25,  // 23: pb.ErrInfoInvalidContracts.ContractErrInfos:type_name -> pb.ContractErrInfo
-	84,  // 24: pb.OpenSessionResp.msgSuccess:type_name -> pb.OpenSessionResp.MsgSuccess
+	96,  // 24: pb.OpenSessionResp.msgSuccess:type_name -> pb.OpenSessionResp.MsgSuccess
 	15,  // 25: pb.OpenSessionResp.error:type_name -> pb.MsgError
-	85,  // 26: pb.RegisterCurrencyResp.msgSuccess:type_name -> pb.RegisterCurrencyResp.MsgSuccess
+	97,  // 26: pb.RegisterCurrencyResp.msgSuccess:type_name -> pb.RegisterCurrencyResp.MsgSuccess
 	15,  // 27: pb.RegisterCurrencyResp.error:type_name -> pb.MsgError
 	4,   // 28: pb.AddPeerIDReq.peerID:type_name -> pb.PeerID
-	86,  // 29: pb.AddPeerIDResp.msgSuccess:type_name -> pb.AddPeerIDResp.MsgSuccess
+	98,  // 29: pb.AddPeerIDResp.msgSuccess:type_name -> pb.AddPeerIDResp.MsgSuccess
 	15,  // 30: pb.AddPeerIDResp.error:type_name -> pb.MsgError
-	87,  // 31: pb.GetPeerIDResp.msgSuccess:type_name -> pb.GetPeerIDResp.MsgSuccess
+	99,  // 31: pb.GetPeerIDResp.msgSuccess:type_name -> pb.GetPeerIDResp.MsgSuccess
 	15,  // 32: pb.GetPeerIDResp.error:type_name -> pb.MsgError
 	5,   // 33: pb.OpenPayChReq.openingBalInfo:type_name -> pb.BalInfo
-	88,  // 34: pb.OpenPayChResp.msgSuccess:type_name -> pb.OpenPayChResp.MsgSuccess
+	100, // 34: pb.OpenPayChResp.msgSuccess:type_name -> pb.OpenPayChResp.MsgSuccess
 	15,  // 35: pb.OpenPayChResp.error:type_name -> pb.MsgError
-	89,  // 36: pb.GetPayChsInfoResp.msgSuccess:type_name -> pb.GetPayChsInfoResp.MsgSuccess
+	101, // 36: pb.GetPayChsInfoResp.msgSuccess:type_name -> pb.GetPayChsInfoResp.MsgSuccess
 	15,  // 37: pb.GetPayChsInfoResp.error:type_name -> pb.MsgError
-	90,  // 38: pb.SubPayChProposalsResp.notify:type_name -> pb.SubPayChProposalsResp.Notify
+	102, // 38: pb.SubPayChProposalsResp.notify:type_name -> pb.SubPayChProposalsResp.Notify
 	15,  // 39: pb.SubPayChProposalsResp.error:type_name -> pb.MsgError
-	91,  // 40: pb.UnsubPayChProposalsResp.msgSuccess:type_name -> pb.UnsubPayChProposalsResp.MsgSuccess
+	103, // 40: pb.UnsubPayChProposalsResp.msgSuccess:type_name -> pb.UnsubPayChProposalsResp.MsgSuccess
 	15,  // 41: pb.UnsubPayChProposalsResp.error:type_name -> pb.MsgError
-	92,  // 42: pb.RespondPayChProposalResp.msgSuccess:type_name -> pb.RespondPayChProposalResp.MsgSuccess
+	104, // 42: pb.RespondPayChProposalResp.msgSuccess:type_name -> pb.RespondPayChProposalResp.MsgSuccess
 	15,  // 43: pb.RespondPayChProposalResp.error:type_name -> pb.MsgError
-	93,  // 44: pb.CloseSessionResp.msgSuccess:type_name -> pb.CloseSessionResp.MsgSuccess
+	105, // 44: pb.CloseSessionResp.msgSuccess:type_name -> pb.CloseSessionResp.MsgSuccess
 	15,  // 45: pb.CloseSessionResp.error:type_name -> pb.MsgError
-	94,  // 46: pb.DeployAssetERC20Resp.msgSuccess:type_name -> pb.DeployAssetERC20Resp.MsgSuccess
+	106, // 46: pb.DeployAssetERC20Resp.msgSuccess:type_name -> pb.DeployAssetERC20Resp.MsgSuccess
 	15,  // 47: pb.DeployAssetERC20Resp.error:type_name -> pb.MsgError
 	7,   // 48: pb.SendPayChUpdateReq.payments:type_name -> pb.Payment
-	95,  // 49: pb.SendPayChUpdateResp.msgSuccess:type_name -> pb.SendPayChUpdateResp.MsgSuccess
+	107, // 49: pb.SendPayChUpdateResp.msgSuccess:type_name -> pb.SendPayChUpdateResp.MsgSuccess
 	15,  // 50: pb.SendPayChUpdateResp.error:type_name -> pb.MsgError
-	96,  // 51: pb.SubPayChUpdatesResp.notify:type_name -> pb.SubPayChUpdatesResp.Notify
+	108, // 51: pb.SubPayChUpdatesResp.notify:type_name -> pb.SubPayChUpdatesResp.Notify
 	15,  // 52: pb.SubPayChUpdatesResp.error:type_name -> pb.MsgError
-	97,  // 53: pb.UnsubPayChUpdatesResp.msgSuccess:type_name -> pb.UnsubPayChUpdatesResp.MsgSuccess
+	109, // 53: pb.UnsubPayChUpdatesResp.msgSuccess:type_name -> pb.UnsubPayChUpdatesResp.MsgSuccess
 	15,  // 54: pb.UnsubPayChUpdatesResp.error:type_name -> pb.MsgError
-	98,  // 55: pb.RespondPayChUpdateResp.msgSuccess:type_name -> pb.RespondPayChUpdateResp.MsgSuccess
+	110, // 55: pb.RespondPayChUpdateResp.msgSuccess:type_name -> pb.RespondPayChUpdateResp.MsgSuccess
 	15,  // 56: pb.RespondPayChUpdateResp.error:type_name -> pb.MsgError
-	99,  // 57: pb.GetPayChInfoResp.msgSuccess:type_name -> pb.GetPayChInfoResp.MsgSuccess
+	111, // 57: pb.GetPayChInfoResp.msgSuccess:type_name -> pb.GetPayChInfoResp.MsgSuccess
 	15,  // 58: pb.GetPayChInfoResp.error:type_name -> pb.MsgError
-	100, // 59: pb.ClosePayChResp.msgSuccess:type_name -> pb.ClosePayChResp.MsgSuccess
+	112, // 59: pb.ClosePayChResp.msgSuccess:type_name -> pb.ClosePayChResp.MsgSuccess
 	15,  // 60: pb.ClosePayChResp.error:type_name -> pb.MsgError
 	10,  // 61: pb.FundReq.params:type_name -> pb.Params
 	14,  // 62: pb.FundReq.state:type_name -> pb.State
 	9,   // 63: pb.FundReq.agreement:type_name -> pb.Balances
 	15,  // 64: pb.FundResp.error:type_name -> pb.MsgError
-	101, // 65: pb.IsAssetRegisteredResp.msgSuccess:type_name -> pb.IsAssetRegisteredResp.MsgSuccess
+	113, // 65: pb.IsAssetRegisteredResp.msgSuccess:type_name -> pb.IsAssetRegisteredResp.MsgSuccess
 	15,  // 66: pb.IsAssetRegisteredResp.error:type_name -> pb.MsgError
 	10,  // 67: pb.StartWatchingLedgerChannelReq.params:type_name -> pb.Params
 	14,  // 68: pb.StartWatchingLedgerChannelReq.state:type_name -> pb.State
@@ -7479,83 +8298,110 @@ var file_api_proto_depIdxs = []int32{
 	79,  // 70: pb.StartWatchingLedgerChannelResp.progressedEvent:type_name -> pb.ProgressedEvent
 	80,  // 71: pb.StartWatchingLedgerChannelResp.concludedEvent:type_name -> pb.ConcludedEvent
 	15,  // 72: pb.StartWatchingLedgerChannelResp.error:type_name -> pb.MsgError
-	102, // 73: pb.AdjudicatorEventBase.timeout:type_name -> pb.AdjudicatorEventBase.Timeout
+	114, // 73: pb.AdjudicatorEventBase.timeout:type_name -> pb.AdjudicatorEventBase.Timeout
 	77,  // 74: pb.RegisteredEvent.adjudicatorEventBase:type_name -> pb.AdjudicatorEventBase
 	14,  // 75: pb.RegisteredEvent.state:type_name -> pb.State
 	77,  // 76: pb.ProgressedEvent.adjudicatorEventBase:type_name -> pb.AdjudicatorEventBase
 	14,  // 77: pb.ProgressedEvent.state:type_name -> pb.State
 	77,  // 78: pb.ConcludedEvent.adjudicatorEventBase:type_name -> pb.AdjudicatorEventBase
 	15,  // 79: pb.StopWatchingResp.error:type_name -> pb.MsgError
-	6,   // 80: pb.OpenSessionResp.MsgSuccess.restoredChs:type_name -> pb.PayChInfo
-	4,   // 81: pb.GetPeerIDResp.MsgSuccess.peerID:type_name -> pb.PeerID
-	6,   // 82: pb.OpenPayChResp.MsgSuccess.openedPayChInfo:type_name -> pb.PayChInfo
-	6,   // 83: pb.GetPayChsInfoResp.MsgSuccess.openPayChsInfo:type_name -> pb.PayChInfo
-	5,   // 84: pb.SubPayChProposalsResp.Notify.openingBalInfo:type_name -> pb.BalInfo
-	6,   // 85: pb.RespondPayChProposalResp.MsgSuccess.openedPayChInfo:type_name -> pb.PayChInfo
-	6,   // 86: pb.CloseSessionResp.MsgSuccess.openPayChsInfo:type_name -> pb.PayChInfo
-	6,   // 87: pb.SendPayChUpdateResp.MsgSuccess.updatedPayChInfo:type_name -> pb.PayChInfo
-	6,   // 88: pb.SubPayChUpdatesResp.Notify.proposedPayChInfo:type_name -> pb.PayChInfo
-	2,   // 89: pb.SubPayChUpdatesResp.Notify.Type:type_name -> pb.SubPayChUpdatesResp.Notify.ChUpdateType
-	15,  // 90: pb.SubPayChUpdatesResp.Notify.error:type_name -> pb.MsgError
-	6,   // 91: pb.RespondPayChUpdateResp.MsgSuccess.updatedPayChInfo:type_name -> pb.PayChInfo
-	6,   // 92: pb.GetPayChInfoResp.MsgSuccess.payChInfo:type_name -> pb.PayChInfo
-	6,   // 93: pb.ClosePayChResp.MsgSuccess.closedPayChInfo:type_name -> pb.PayChInfo
-	3,   // 94: pb.AdjudicatorEventBase.Timeout.type:type_name -> pb.AdjudicatorEventBase.TimeoutType
-	29,  // 95: pb.Payment_API.GetConfig:input_type -> pb.GetConfigReq
-	31,  // 96: pb.Payment_API.OpenSession:input_type -> pb.OpenSessionReq
-	33,  // 97: pb.Payment_API.Time:input_type -> pb.TimeReq
-	35,  // 98: pb.Payment_API.RegisterCurrency:input_type -> pb.RegisterCurrencyReq
-	37,  // 99: pb.Payment_API.Help:input_type -> pb.HelpReq
-	39,  // 100: pb.Payment_API.AddPeerID:input_type -> pb.AddPeerIDReq
-	41,  // 101: pb.Payment_API.GetPeerID:input_type -> pb.GetPeerIDReq
-	43,  // 102: pb.Payment_API.OpenPayCh:input_type -> pb.OpenPayChReq
-	45,  // 103: pb.Payment_API.GetPayChsInfo:input_type -> pb.GetPayChsInfoReq
-	47,  // 104: pb.Payment_API.SubPayChProposals:input_type -> pb.SubPayChProposalsReq
-	49,  // 105: pb.Payment_API.UnsubPayChProposals:input_type -> pb.UnsubPayChProposalsReq
-	51,  // 106: pb.Payment_API.RespondPayChProposal:input_type -> pb.RespondPayChProposalReq
-	53,  // 107: pb.Payment_API.CloseSession:input_type -> pb.CloseSessionReq
-	55,  // 108: pb.Payment_API.DeployAssetERC20:input_type -> pb.DeployAssetERC20Req
-	57,  // 109: pb.Payment_API.SendPayChUpdate:input_type -> pb.SendPayChUpdateReq
-	59,  // 110: pb.Payment_API.SubPayChUpdates:input_type -> pb.SubpayChUpdatesReq
-	61,  // 111: pb.Payment_API.UnsubPayChUpdates:input_type -> pb.UnsubPayChUpdatesReq
-	63,  // 112: pb.Payment_API.RespondPayChUpdate:input_type -> pb.RespondPayChUpdateReq
-	65,  // 113: pb.Payment_API.GetPayChInfo:input_type -> pb.GetPayChInfoReq
-	67,  // 114: pb.Payment_API.ClosePayCh:input_type -> pb.ClosePayChReq
-	69,  // 115: pb.Payment_API.Fund:input_type -> pb.FundReq
-	71,  // 116: pb.Payment_API.RegisterAssetERC20:input_type -> pb.RegisterAssetERC20Req
-	73,  // 117: pb.Payment_API.IsAssetRegistered:input_type -> pb.IsAssetRegisteredReq
-	75,  // 118: pb.Payment_API.StartWatchingLedgerChannel:input_type -> pb.StartWatchingLedgerChannelReq
-	81,  // 119: pb.Payment_API.StopWatching:input_type -> pb.StopWatchingReq
-	30,  // 120: pb.Payment_API.GetConfig:output_type -> pb.GetConfigResp
-	32,  // 121: pb.Payment_API.OpenSession:output_type -> pb.OpenSessionResp
-	34,  // 122: pb.Payment_API.Time:output_type -> pb.TimeResp
-	36,  // 123: pb.Payment_API.RegisterCurrency:output_type -> pb.RegisterCurrencyResp
-	38,  // 124: pb.Payment_API.Help:output_type -> pb.HelpResp
-	40,  // 125: pb.Payment_API.AddPeerID:output_type -> pb.AddPeerIDResp
-	42,  // 126: pb.Payment_API.GetPeerID:output_type -> pb.GetPeerIDResp
-	44,  // 127: pb.Payment_API.OpenPayCh:output_type -> pb.OpenPayChResp
-	46,  // 128: pb.Payment_API.GetPayChsInfo:output_type -> pb.GetPayChsInfoResp
-	48,  // 129: pb.Payment_API.SubPayChProposals:output_type -> pb.SubPayChProposalsResp
-	50,  // 130: pb.Payment_API.UnsubPayChProposals:output_type -> pb.UnsubPayChProposalsResp
-	52,  // 131: pb.Payment_API.RespondPayChProposal:output_type -> pb.RespondPayChProposalResp
-	54,  // 132: pb.Payment_API.CloseSession:output_type -> pb.CloseSessionResp
-	56,  // 133: pb.Payment_API.DeployAssetERC20:output_type -> pb.DeployAssetERC20Resp
-	58,  // 134: pb.Payment_API.SendPayChUpdate:output_type -> pb.SendPayChUpdateResp
-	60,  // 135: pb.Payment_API.SubPayChUpdates:output_type -> pb.SubPayChUpdatesResp
-	62,  // 136: pb.Payment_API.UnsubPayChUpdates:output_type -> pb.UnsubPayChUpdatesResp
-	64,  // 137: pb.Payment_API.RespondPayChUpdate:output_type -> pb.RespondPayChUpdateResp
-	66,  // 138: pb.Payment_API.GetPayChInfo:output_type -> pb.GetPayChInfoResp
-	68,  // 139: pb.Payment_API.ClosePayCh:output_type -> pb.ClosePayChResp
-	70,  // 140: pb.Payment_API.Fund:output_type -> pb.FundResp
-	72,  // 141: pb.Payment_API.RegisterAssetERC20:output_type -> pb.RegisterAssetERC20Resp
-	74,  // 142: pb.Payment_API.IsAssetRegistered:output_type -> pb.IsAssetRegisteredResp
-	76,  // 143: pb.Payment_API.StartWatchingLedgerChannel:output_type -> pb.StartWatchingLedgerChannelResp
-	82,  // 144: pb.Payment_API.StopWatching:output_type -> pb.StopWatchingResp
-	120, // [120:145] is the sub-list for method output_type
-	95,  // [95:120] is the sub-list for method input_type
-	95,  // [95:95] is the sub-list for extension type_name
-	95,  // [95:95] is the sub-list for extension extendee
-	0,   // [0:95] is the sub-list for field type_name
+	10,  // 80: pb.AdjudicatorReq.params:type_name -> pb.Params
+	84,  // 81: pb.AdjudicatorReq.tx:type_name -> pb.Transaction
+	14,  // 82: pb.Transaction.state:type_name -> pb.State
+	10,  // 83: pb.SignedState.params:type_name -> pb.Params
+	14,  // 84: pb.SignedState.state:type_name -> pb.State
+	83,  // 85: pb.RegisterReq.adjReq:type_name -> pb.AdjudicatorReq
+	85,  // 86: pb.RegisterReq.signedStates:type_name -> pb.SignedState
+	15,  // 87: pb.RegisterResp.error:type_name -> pb.MsgError
+	14,  // 88: pb.StateMap.state:type_name -> pb.State
+	83,  // 89: pb.WithdrawReq.adjReq:type_name -> pb.AdjudicatorReq
+	88,  // 90: pb.WithdrawReq.stateMap:type_name -> pb.StateMap
+	15,  // 91: pb.WithdrawResp.error:type_name -> pb.MsgError
+	83,  // 92: pb.ProgressReq.adjReq:type_name -> pb.AdjudicatorReq
+	14,  // 93: pb.ProgressReq.newState:type_name -> pb.State
+	15,  // 94: pb.ProgressResp.error:type_name -> pb.MsgError
+	78,  // 95: pb.SubscribeResp.registeredEvent:type_name -> pb.RegisteredEvent
+	79,  // 96: pb.SubscribeResp.progressedEvent:type_name -> pb.ProgressedEvent
+	80,  // 97: pb.SubscribeResp.concludedEvent:type_name -> pb.ConcludedEvent
+	15,  // 98: pb.SubscribeResp.error:type_name -> pb.MsgError
+	6,   // 99: pb.OpenSessionResp.MsgSuccess.restoredChs:type_name -> pb.PayChInfo
+	4,   // 100: pb.GetPeerIDResp.MsgSuccess.peerID:type_name -> pb.PeerID
+	6,   // 101: pb.OpenPayChResp.MsgSuccess.openedPayChInfo:type_name -> pb.PayChInfo
+	6,   // 102: pb.GetPayChsInfoResp.MsgSuccess.openPayChsInfo:type_name -> pb.PayChInfo
+	5,   // 103: pb.SubPayChProposalsResp.Notify.openingBalInfo:type_name -> pb.BalInfo
+	6,   // 104: pb.RespondPayChProposalResp.MsgSuccess.openedPayChInfo:type_name -> pb.PayChInfo
+	6,   // 105: pb.CloseSessionResp.MsgSuccess.openPayChsInfo:type_name -> pb.PayChInfo
+	6,   // 106: pb.SendPayChUpdateResp.MsgSuccess.updatedPayChInfo:type_name -> pb.PayChInfo
+	6,   // 107: pb.SubPayChUpdatesResp.Notify.proposedPayChInfo:type_name -> pb.PayChInfo
+	2,   // 108: pb.SubPayChUpdatesResp.Notify.Type:type_name -> pb.SubPayChUpdatesResp.Notify.ChUpdateType
+	15,  // 109: pb.SubPayChUpdatesResp.Notify.error:type_name -> pb.MsgError
+	6,   // 110: pb.RespondPayChUpdateResp.MsgSuccess.updatedPayChInfo:type_name -> pb.PayChInfo
+	6,   // 111: pb.GetPayChInfoResp.MsgSuccess.payChInfo:type_name -> pb.PayChInfo
+	6,   // 112: pb.ClosePayChResp.MsgSuccess.closedPayChInfo:type_name -> pb.PayChInfo
+	3,   // 113: pb.AdjudicatorEventBase.Timeout.type:type_name -> pb.AdjudicatorEventBase.TimeoutType
+	29,  // 114: pb.Payment_API.GetConfig:input_type -> pb.GetConfigReq
+	31,  // 115: pb.Payment_API.OpenSession:input_type -> pb.OpenSessionReq
+	33,  // 116: pb.Payment_API.Time:input_type -> pb.TimeReq
+	35,  // 117: pb.Payment_API.RegisterCurrency:input_type -> pb.RegisterCurrencyReq
+	37,  // 118: pb.Payment_API.Help:input_type -> pb.HelpReq
+	39,  // 119: pb.Payment_API.AddPeerID:input_type -> pb.AddPeerIDReq
+	41,  // 120: pb.Payment_API.GetPeerID:input_type -> pb.GetPeerIDReq
+	43,  // 121: pb.Payment_API.OpenPayCh:input_type -> pb.OpenPayChReq
+	45,  // 122: pb.Payment_API.GetPayChsInfo:input_type -> pb.GetPayChsInfoReq
+	47,  // 123: pb.Payment_API.SubPayChProposals:input_type -> pb.SubPayChProposalsReq
+	49,  // 124: pb.Payment_API.UnsubPayChProposals:input_type -> pb.UnsubPayChProposalsReq
+	51,  // 125: pb.Payment_API.RespondPayChProposal:input_type -> pb.RespondPayChProposalReq
+	53,  // 126: pb.Payment_API.CloseSession:input_type -> pb.CloseSessionReq
+	55,  // 127: pb.Payment_API.DeployAssetERC20:input_type -> pb.DeployAssetERC20Req
+	57,  // 128: pb.Payment_API.SendPayChUpdate:input_type -> pb.SendPayChUpdateReq
+	59,  // 129: pb.Payment_API.SubPayChUpdates:input_type -> pb.SubpayChUpdatesReq
+	61,  // 130: pb.Payment_API.UnsubPayChUpdates:input_type -> pb.UnsubPayChUpdatesReq
+	63,  // 131: pb.Payment_API.RespondPayChUpdate:input_type -> pb.RespondPayChUpdateReq
+	65,  // 132: pb.Payment_API.GetPayChInfo:input_type -> pb.GetPayChInfoReq
+	67,  // 133: pb.Payment_API.ClosePayCh:input_type -> pb.ClosePayChReq
+	69,  // 134: pb.Payment_API.Fund:input_type -> pb.FundReq
+	71,  // 135: pb.Payment_API.RegisterAssetERC20:input_type -> pb.RegisterAssetERC20Req
+	73,  // 136: pb.Payment_API.IsAssetRegistered:input_type -> pb.IsAssetRegisteredReq
+	75,  // 137: pb.Payment_API.StartWatchingLedgerChannel:input_type -> pb.StartWatchingLedgerChannelReq
+	81,  // 138: pb.Payment_API.StopWatching:input_type -> pb.StopWatchingReq
+	86,  // 139: pb.Payment_API.Register:input_type -> pb.RegisterReq
+	89,  // 140: pb.Payment_API.Withdraw:input_type -> pb.WithdrawReq
+	91,  // 141: pb.Payment_API.Progress:input_type -> pb.ProgressReq
+	91,  // 142: pb.Payment_API.Subscribe:input_type -> pb.ProgressReq
+	30,  // 143: pb.Payment_API.GetConfig:output_type -> pb.GetConfigResp
+	32,  // 144: pb.Payment_API.OpenSession:output_type -> pb.OpenSessionResp
+	34,  // 145: pb.Payment_API.Time:output_type -> pb.TimeResp
+	36,  // 146: pb.Payment_API.RegisterCurrency:output_type -> pb.RegisterCurrencyResp
+	38,  // 147: pb.Payment_API.Help:output_type -> pb.HelpResp
+	40,  // 148: pb.Payment_API.AddPeerID:output_type -> pb.AddPeerIDResp
+	42,  // 149: pb.Payment_API.GetPeerID:output_type -> pb.GetPeerIDResp
+	44,  // 150: pb.Payment_API.OpenPayCh:output_type -> pb.OpenPayChResp
+	46,  // 151: pb.Payment_API.GetPayChsInfo:output_type -> pb.GetPayChsInfoResp
+	48,  // 152: pb.Payment_API.SubPayChProposals:output_type -> pb.SubPayChProposalsResp
+	50,  // 153: pb.Payment_API.UnsubPayChProposals:output_type -> pb.UnsubPayChProposalsResp
+	52,  // 154: pb.Payment_API.RespondPayChProposal:output_type -> pb.RespondPayChProposalResp
+	54,  // 155: pb.Payment_API.CloseSession:output_type -> pb.CloseSessionResp
+	56,  // 156: pb.Payment_API.DeployAssetERC20:output_type -> pb.DeployAssetERC20Resp
+	58,  // 157: pb.Payment_API.SendPayChUpdate:output_type -> pb.SendPayChUpdateResp
+	60,  // 158: pb.Payment_API.SubPayChUpdates:output_type -> pb.SubPayChUpdatesResp
+	62,  // 159: pb.Payment_API.UnsubPayChUpdates:output_type -> pb.UnsubPayChUpdatesResp
+	64,  // 160: pb.Payment_API.RespondPayChUpdate:output_type -> pb.RespondPayChUpdateResp
+	66,  // 161: pb.Payment_API.GetPayChInfo:output_type -> pb.GetPayChInfoResp
+	68,  // 162: pb.Payment_API.ClosePayCh:output_type -> pb.ClosePayChResp
+	70,  // 163: pb.Payment_API.Fund:output_type -> pb.FundResp
+	72,  // 164: pb.Payment_API.RegisterAssetERC20:output_type -> pb.RegisterAssetERC20Resp
+	74,  // 165: pb.Payment_API.IsAssetRegistered:output_type -> pb.IsAssetRegisteredResp
+	76,  // 166: pb.Payment_API.StartWatchingLedgerChannel:output_type -> pb.StartWatchingLedgerChannelResp
+	82,  // 167: pb.Payment_API.StopWatching:output_type -> pb.StopWatchingResp
+	87,  // 168: pb.Payment_API.Register:output_type -> pb.RegisterResp
+	90,  // 169: pb.Payment_API.Withdraw:output_type -> pb.WithdrawResp
+	92,  // 170: pb.Payment_API.Progress:output_type -> pb.ProgressResp
+	92,  // 171: pb.Payment_API.Subscribe:output_type -> pb.ProgressResp
+	143, // [143:172] is the sub-list for method output_type
+	114, // [114:143] is the sub-list for method input_type
+	114, // [114:114] is the sub-list for extension type_name
+	114, // [114:114] is the sub-list for extension extendee
+	0,   // [0:114] is the sub-list for field type_name
 }
 
 func init() { file_api_proto_init() }
@@ -8513,7 +9359,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[79].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BalInfoBal); i {
+			switch v := v.(*AdjudicatorReq); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8525,7 +9371,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[80].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*OpenSessionResp_MsgSuccess); i {
+			switch v := v.(*Transaction); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8537,7 +9383,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[81].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RegisterCurrencyResp_MsgSuccess); i {
+			switch v := v.(*SignedState); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8549,7 +9395,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[82].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AddPeerIDResp_MsgSuccess); i {
+			switch v := v.(*RegisterReq); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8561,7 +9407,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[83].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetPeerIDResp_MsgSuccess); i {
+			switch v := v.(*RegisterResp); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8573,7 +9419,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[84].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*OpenPayChResp_MsgSuccess); i {
+			switch v := v.(*StateMap); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8585,7 +9431,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[85].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetPayChsInfoResp_MsgSuccess); i {
+			switch v := v.(*WithdrawReq); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8597,7 +9443,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[86].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SubPayChProposalsResp_Notify); i {
+			switch v := v.(*WithdrawResp); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8609,7 +9455,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[87].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UnsubPayChProposalsResp_MsgSuccess); i {
+			switch v := v.(*ProgressReq); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8621,7 +9467,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[88].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RespondPayChProposalResp_MsgSuccess); i {
+			switch v := v.(*ProgressResp); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8633,7 +9479,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[89].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CloseSessionResp_MsgSuccess); i {
+			switch v := v.(*SubscribeReq); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8645,7 +9491,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[90].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeployAssetERC20Resp_MsgSuccess); i {
+			switch v := v.(*SubscribeResp); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8657,7 +9503,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[91].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SendPayChUpdateResp_MsgSuccess); i {
+			switch v := v.(*BalInfoBal); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8669,7 +9515,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[92].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SubPayChUpdatesResp_Notify); i {
+			switch v := v.(*OpenSessionResp_MsgSuccess); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8681,7 +9527,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[93].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UnsubPayChUpdatesResp_MsgSuccess); i {
+			switch v := v.(*RegisterCurrencyResp_MsgSuccess); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8693,7 +9539,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[94].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RespondPayChUpdateResp_MsgSuccess); i {
+			switch v := v.(*AddPeerIDResp_MsgSuccess); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8705,7 +9551,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[95].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetPayChInfoResp_MsgSuccess); i {
+			switch v := v.(*GetPeerIDResp_MsgSuccess); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8717,7 +9563,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[96].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ClosePayChResp_MsgSuccess); i {
+			switch v := v.(*OpenPayChResp_MsgSuccess); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8729,7 +9575,7 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[97].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*IsAssetRegisteredResp_MsgSuccess); i {
+			switch v := v.(*GetPayChsInfoResp_MsgSuccess); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -8741,6 +9587,150 @@ func file_api_proto_init() {
 			}
 		}
 		file_api_proto_msgTypes[98].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SubPayChProposalsResp_Notify); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[99].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UnsubPayChProposalsResp_MsgSuccess); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[100].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RespondPayChProposalResp_MsgSuccess); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[101].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CloseSessionResp_MsgSuccess); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[102].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*DeployAssetERC20Resp_MsgSuccess); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[103].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SendPayChUpdateResp_MsgSuccess); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[104].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SubPayChUpdatesResp_Notify); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[105].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UnsubPayChUpdatesResp_MsgSuccess); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[106].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RespondPayChUpdateResp_MsgSuccess); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[107].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetPayChInfoResp_MsgSuccess); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[108].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ClosePayChResp_MsgSuccess); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[109].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*IsAssetRegisteredResp_MsgSuccess); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_api_proto_msgTypes[110].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*AdjudicatorEventBase_Timeout); i {
 			case 0:
 				return &v.state
@@ -8845,13 +9835,19 @@ func file_api_proto_init() {
 		(*StartWatchingLedgerChannelResp_ConcludedEvent)(nil),
 		(*StartWatchingLedgerChannelResp_Error)(nil),
 	}
+	file_api_proto_msgTypes[90].OneofWrappers = []interface{}{
+		(*SubscribeResp_RegisteredEvent)(nil),
+		(*SubscribeResp_ProgressedEvent)(nil),
+		(*SubscribeResp_ConcludedEvent)(nil),
+		(*SubscribeResp_Error)(nil),
+	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_api_proto_rawDesc,
 			NumEnums:      4,
-			NumMessages:   99,
+			NumMessages:   111,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

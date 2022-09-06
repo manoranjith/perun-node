@@ -47,6 +47,10 @@ type Payment_APIClient interface {
 	IsAssetRegistered(ctx context.Context, in *IsAssetRegisteredReq, opts ...grpc.CallOption) (*IsAssetRegisteredResp, error)
 	StartWatchingLedgerChannel(ctx context.Context, opts ...grpc.CallOption) (Payment_API_StartWatchingLedgerChannelClient, error)
 	StopWatching(ctx context.Context, in *StopWatchingReq, opts ...grpc.CallOption) (*StopWatchingResp, error)
+	Register(ctx context.Context, in *RegisterReq, opts ...grpc.CallOption) (*RegisterResp, error)
+	Withdraw(ctx context.Context, in *WithdrawReq, opts ...grpc.CallOption) (*WithdrawResp, error)
+	Progress(ctx context.Context, in *ProgressReq, opts ...grpc.CallOption) (*ProgressResp, error)
+	Subscribe(ctx context.Context, in *ProgressReq, opts ...grpc.CallOption) (Payment_API_SubscribeClient, error)
 }
 
 type payment_APIClient struct {
@@ -350,6 +354,65 @@ func (c *payment_APIClient) StopWatching(ctx context.Context, in *StopWatchingRe
 	return out, nil
 }
 
+func (c *payment_APIClient) Register(ctx context.Context, in *RegisterReq, opts ...grpc.CallOption) (*RegisterResp, error) {
+	out := new(RegisterResp)
+	err := c.cc.Invoke(ctx, "/pb.Payment_API/Register", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *payment_APIClient) Withdraw(ctx context.Context, in *WithdrawReq, opts ...grpc.CallOption) (*WithdrawResp, error) {
+	out := new(WithdrawResp)
+	err := c.cc.Invoke(ctx, "/pb.Payment_API/Withdraw", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *payment_APIClient) Progress(ctx context.Context, in *ProgressReq, opts ...grpc.CallOption) (*ProgressResp, error) {
+	out := new(ProgressResp)
+	err := c.cc.Invoke(ctx, "/pb.Payment_API/Progress", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *payment_APIClient) Subscribe(ctx context.Context, in *ProgressReq, opts ...grpc.CallOption) (Payment_API_SubscribeClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Payment_API_ServiceDesc.Streams[3], "/pb.Payment_API/Subscribe", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &payment_APISubscribeClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Payment_API_SubscribeClient interface {
+	Recv() (*ProgressResp, error)
+	grpc.ClientStream
+}
+
+type payment_APISubscribeClient struct {
+	grpc.ClientStream
+}
+
+func (x *payment_APISubscribeClient) Recv() (*ProgressResp, error) {
+	m := new(ProgressResp)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // Payment_APIServer is the server API for Payment_API service.
 // All implementations must embed UnimplementedPayment_APIServer
 // for forward compatibility
@@ -379,6 +442,10 @@ type Payment_APIServer interface {
 	IsAssetRegistered(context.Context, *IsAssetRegisteredReq) (*IsAssetRegisteredResp, error)
 	StartWatchingLedgerChannel(Payment_API_StartWatchingLedgerChannelServer) error
 	StopWatching(context.Context, *StopWatchingReq) (*StopWatchingResp, error)
+	Register(context.Context, *RegisterReq) (*RegisterResp, error)
+	Withdraw(context.Context, *WithdrawReq) (*WithdrawResp, error)
+	Progress(context.Context, *ProgressReq) (*ProgressResp, error)
+	Subscribe(*ProgressReq, Payment_API_SubscribeServer) error
 	mustEmbedUnimplementedPayment_APIServer()
 }
 
@@ -460,6 +527,18 @@ func (UnimplementedPayment_APIServer) StartWatchingLedgerChannel(Payment_API_Sta
 }
 func (UnimplementedPayment_APIServer) StopWatching(context.Context, *StopWatchingReq) (*StopWatchingResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StopWatching not implemented")
+}
+func (UnimplementedPayment_APIServer) Register(context.Context, *RegisterReq) (*RegisterResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
+}
+func (UnimplementedPayment_APIServer) Withdraw(context.Context, *WithdrawReq) (*WithdrawResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Withdraw not implemented")
+}
+func (UnimplementedPayment_APIServer) Progress(context.Context, *ProgressReq) (*ProgressResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Progress not implemented")
+}
+func (UnimplementedPayment_APIServer) Subscribe(*ProgressReq, Payment_API_SubscribeServer) error {
+	return status.Errorf(codes.Unimplemented, "method Subscribe not implemented")
 }
 func (UnimplementedPayment_APIServer) mustEmbedUnimplementedPayment_APIServer() {}
 
@@ -938,6 +1017,81 @@ func _Payment_API_StopWatching_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Payment_API_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(Payment_APIServer).Register(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Payment_API/Register",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(Payment_APIServer).Register(ctx, req.(*RegisterReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Payment_API_Withdraw_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WithdrawReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(Payment_APIServer).Withdraw(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Payment_API/Withdraw",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(Payment_APIServer).Withdraw(ctx, req.(*WithdrawReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Payment_API_Progress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ProgressReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(Payment_APIServer).Progress(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Payment_API/Progress",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(Payment_APIServer).Progress(ctx, req.(*ProgressReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Payment_API_Subscribe_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ProgressReq)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(Payment_APIServer).Subscribe(m, &payment_APISubscribeServer{stream})
+}
+
+type Payment_API_SubscribeServer interface {
+	Send(*ProgressResp) error
+	grpc.ServerStream
+}
+
+type payment_APISubscribeServer struct {
+	grpc.ServerStream
+}
+
+func (x *payment_APISubscribeServer) Send(m *ProgressResp) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Payment_API_ServiceDesc is the grpc.ServiceDesc for Payment_API service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1033,6 +1187,18 @@ var Payment_API_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "StopWatching",
 			Handler:    _Payment_API_StopWatching_Handler,
 		},
+		{
+			MethodName: "Register",
+			Handler:    _Payment_API_Register_Handler,
+		},
+		{
+			MethodName: "Withdraw",
+			Handler:    _Payment_API_Withdraw_Handler,
+		},
+		{
+			MethodName: "Progress",
+			Handler:    _Payment_API_Progress_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -1050,6 +1216,11 @@ var Payment_API_ServiceDesc = grpc.ServiceDesc{
 			Handler:       _Payment_API_StartWatchingLedgerChannel_Handler,
 			ServerStreams: true,
 			ClientStreams: true,
+		},
+		{
+			StreamName:    "Subscribe",
+			Handler:       _Payment_API_Subscribe_Handler,
+			ServerStreams: true,
 		},
 	},
 	Metadata: "api.proto",
