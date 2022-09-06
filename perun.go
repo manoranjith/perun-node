@@ -438,10 +438,10 @@ type SessionAPI interface {
 	Funder
 
 	StartWatchingLedgerChannel(context.Context, channel.SignedState) (
-		pwatcher.StatesPub, pwatcher.AdjudicatorSub, error)
+		pwatcher.StatesPub, pwatcher.AdjudicatorSub, APIError)
 	StartWatchingSubChannel(ctx context.Context, parent channel.ID, signedState pchannel.SignedState) (
-		pwatcher.StatesPub, pwatcher.AdjudicatorSub, error)
-	StopWatching(context.Context, pchannel.ID) error
+		pwatcher.StatesPub, pwatcher.AdjudicatorSub, APIError)
+	StopWatching(context.Context, pchannel.ID) APIError
 
 	// This function is used internally to get a ChAPI instance.
 	// Should not be exposed via user API.

@@ -252,7 +252,7 @@ func (_m *SessionAPI) RespondChProposal(_a0 context.Context, _a1 string, _a2 boo
 }
 
 // StartWatchingLedgerChannel provides a mock function with given fields: _a0, _a1
-func (_m *SessionAPI) StartWatchingLedgerChannel(_a0 context.Context, _a1 channel.SignedState) (watcher.StatesPub, watcher.AdjudicatorSub, error) {
+func (_m *SessionAPI) StartWatchingLedgerChannel(_a0 context.Context, _a1 channel.SignedState) (watcher.StatesPub, watcher.AdjudicatorSub, perun.APIError) {
 	ret := _m.Called(_a0, _a1)
 
 	var r0 watcher.StatesPub
@@ -273,18 +273,20 @@ func (_m *SessionAPI) StartWatchingLedgerChannel(_a0 context.Context, _a1 channe
 		}
 	}
 
-	var r2 error
-	if rf, ok := ret.Get(2).(func(context.Context, channel.SignedState) error); ok {
+	var r2 perun.APIError
+	if rf, ok := ret.Get(2).(func(context.Context, channel.SignedState) perun.APIError); ok {
 		r2 = rf(_a0, _a1)
 	} else {
-		r2 = ret.Error(2)
+		if ret.Get(2) != nil {
+			r2 = ret.Get(2).(perun.APIError)
+		}
 	}
 
 	return r0, r1, r2
 }
 
 // StartWatchingSubChannel provides a mock function with given fields: ctx, parent, signedState
-func (_m *SessionAPI) StartWatchingSubChannel(ctx context.Context, parent [32]byte, signedState channel.SignedState) (watcher.StatesPub, watcher.AdjudicatorSub, error) {
+func (_m *SessionAPI) StartWatchingSubChannel(ctx context.Context, parent [32]byte, signedState channel.SignedState) (watcher.StatesPub, watcher.AdjudicatorSub, perun.APIError) {
 	ret := _m.Called(ctx, parent, signedState)
 
 	var r0 watcher.StatesPub
@@ -305,25 +307,29 @@ func (_m *SessionAPI) StartWatchingSubChannel(ctx context.Context, parent [32]by
 		}
 	}
 
-	var r2 error
-	if rf, ok := ret.Get(2).(func(context.Context, [32]byte, channel.SignedState) error); ok {
+	var r2 perun.APIError
+	if rf, ok := ret.Get(2).(func(context.Context, [32]byte, channel.SignedState) perun.APIError); ok {
 		r2 = rf(ctx, parent, signedState)
 	} else {
-		r2 = ret.Error(2)
+		if ret.Get(2) != nil {
+			r2 = ret.Get(2).(perun.APIError)
+		}
 	}
 
 	return r0, r1, r2
 }
 
 // StopWatching provides a mock function with given fields: _a0, _a1
-func (_m *SessionAPI) StopWatching(_a0 context.Context, _a1 [32]byte) error {
+func (_m *SessionAPI) StopWatching(_a0 context.Context, _a1 [32]byte) perun.APIError {
 	ret := _m.Called(_a0, _a1)
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, [32]byte) error); ok {
+	var r0 perun.APIError
+	if rf, ok := ret.Get(0).(func(context.Context, [32]byte) perun.APIError); ok {
 		r0 = rf(_a0, _a1)
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(perun.APIError)
+		}
 	}
 
 	return r0
