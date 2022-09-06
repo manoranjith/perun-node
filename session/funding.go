@@ -34,13 +34,14 @@ import (
 func (s *Session) Fund(ctx context.Context, req pchannel.FundingReq) perun.APIError {
 	s.WithField("method", "Fund").Infof("\nReceived request with params %+v", req)
 	err := s.funder.Fund(ctx, req)
+	// TODO: Proper error handling with specific, actionable error codes.
 	if err != nil {
 		apiErr := perun.NewAPIErrUnknownInternal(err)
 		s.WithFields(perun.APIErrAsMap("Fund", apiErr)).Error(apiErr.Message())
 		return apiErr
 	}
 	s.user.OnChain.Wallet.IncrementUsage(s.user.OnChain.Addr)
-	s.WithField("method", "Fudn").Infof("Funded channel successfully: %+v", req.State.ID)
+	s.WithField("method", "Fund").Infof("Funded channel successfully: %+v", req.State.ID)
 	return nil
 }
 
