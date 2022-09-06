@@ -263,6 +263,12 @@ service Payment_API{
 
     rpc StartWatchingLedgerChannel(stream StartWatchingLedgerChannelReq) returns (stream StartWatchingLedgerChannelResp) {}
     rpc StopWatching(StopWatchingReq) returns (StopWatchingResp) {}
+
+    rpc Register(RegisterReq) returns (RegisterResp){}
+    rpc Withdraw(WithdrawReq) returns (WithdrawResp){}
+    rpc Progress(ProgressReq) returns (ProgressResp){}
+    rpc Subscribe(ProgressReq) returns (stream ProgressResp){}
+
 }
 
 message GetConfigReq {
@@ -653,4 +659,69 @@ message StopWatchingReq {
 
 message StopWatchingResp {
     MsgError error = 1;
+}
+
+message AdjudicatorReq {
+    Params params = 1;
+    bytes acc = 2;
+    Transaction tx = 3; 
+    uint32 idx = 4;
+    bool secondary = 5;
+}
+
+message Transaction {
+    State state = 1;
+    repeated bytes sigs = 2;
+}
+
+message SignedState {
+    Params params = 1;
+    State state = 2;
+    repeated bytes sigs = 3;
+}
+
+message RegisterReq {
+    AdjudicatorReq adjReq = 1;
+    repeated SignedState signedStates = 2;
+}
+
+message RegisterResp {
+    MsgError error = 1;
+}
+
+message StateMap {
+    bytes id = 1;
+    State state = 2;
+}
+
+message WithdrawReq {
+    AdjudicatorReq adjReq = 1;
+    repeated StateMap stateMap = 2;
+}
+
+message WithdrawResp {
+    MsgError error = 1;
+}
+
+message ProgressReq {
+    AdjudicatorReq adjReq = 1;
+    State newState = 2;
+    bytes sig = 3;
+}
+
+message ProgressResp {
+    MsgError error = 1;
+}
+
+message SubscribeReq {
+    bytes chID = 1;
+}
+
+message SubscribeResp {
+    oneof response{
+        RegisteredEvent registeredEvent = 1;
+        ProgressedEvent progressedEvent = 2;
+        ConcludedEvent concludedEvent = 3;
+        MsgError error = 4;
+    }
 }
