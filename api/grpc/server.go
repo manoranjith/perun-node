@@ -25,6 +25,7 @@ import (
 
 	"github.com/pkg/errors"
 	grpclib "google.golang.org/grpc"
+	pethchannel "perun.network/go-perun/backend/ethereum/channel"
 	"perun.network/go-perun/channel"
 	pchannel "perun.network/go-perun/channel"
 	"perun.network/go-perun/wallet"
@@ -59,6 +60,8 @@ type payChAPIServer struct {
 
 	chProposalsNotif map[string]chan bool
 	chUpdatesNotif   map[string]map[string]chan bool
+
+	// chWatcher map[string]map[string]chan bool
 }
 
 // ListenAndServePayChAPI starts a payment channel API server that listens for incoming grpc
@@ -148,6 +151,7 @@ func (a *payChAPIServer) OpenSession(ctx context.Context, req *pb.OpenSessionReq
 
 	a.Lock()
 	a.chUpdatesNotif[sessionID] = make(map[string]chan bool)
+	// a.chWatcher[sessionID] = make(map[string]chan bool)
 	a.Unlock()
 
 	return &pb.OpenSessionResp{
@@ -752,6 +756,283 @@ func (a *payChAPIServer) IsAssetRegistered(ctx context.Context, req *pb.IsAssetR
 	}, nil
 }
 
+// StartWatchingLedgerChannel wraps session.StartWatchingLedgerChannel.
+func (a *payChAPIServer) StartWatchingLedgerChannel(srv pb.Payment_API_StartWatchingLedgerChannelServer) error {
+	req, err := srv.Recv()
+	if err != nil {
+		return errors.WithMessage(err, "reading request data")
+	}
+	sess, err := a.n.GetSession(req.SessionID)
+	if err != nil {
+		return errors.WithMessage(err, "retrieving session")
+	}
+
+	signedState, err := toSignedState(req)
+	if err != nil {
+		return errors.WithMessage(err, "parsing signed state")
+	}
+	statesPub, adjSub, err := sess.StartWatchingLedgerChannel(context.TODO(), *signedState)
+	if err != nil {
+		return errors.WithMessage(err, "start watching")
+	}
+
+	// This stream is anyways closed when StopWatching is called for.
+	// Hence, that will act as the exit condition for the loop.
+	go func() {
+		adjEventStream := adjSub.EventStream()
+		for {
+			select {
+			case adjEvent, isOpen := <-adjEventStream:
+				if !isOpen {
+					return
+				}
+				protoResponse, err := toProtoResponse(adjEvent)
+				if err != nil {
+					return
+				}
+
+				// Handle error while sending notification.
+				err = srv.Send(protoResponse)
+				if err != nil {
+					return
+				}
+			}
+		}
+	}()
+
+	// signal := make(chan bool)
+	// a.Lock()
+	// a.chWatcher[req.SessionID][chID] = signal
+	// a.Unlock()
+
+	// It should be the responsibility of the streamer to close things.
+	// Hence, the client should be closing this stream, which will cause srv.Recv to return an error.
+	// The error will act as the exit condition for this for{} loop.
+StatesPubLoop:
+	for {
+		req, err = srv.Recv()
+		if err != nil {
+			err = errors.WithMessage(err, "reading published states pub data")
+			break StatesPubLoop
+		}
+		tx, err := toTransaction(req)
+		if err != nil {
+			err = errors.WithMessage(err, "parsing published states pub data")
+			break StatesPubLoop
+		}
+		err = statesPub.Publish(context.TODO(), *tx)
+		if err != nil {
+			err = errors.WithMessage(err, "locally relaying published states pub data")
+			break StatesPubLoop
+		}
+	}
+
+	// TODO: Ensure adjEventSteam go-routine is killed. It should not be leaking.
+	// It is to allow for that, label breaks are used instead of return statements in the above for-select.
+	return nil
+}
+
+// StopWatching wraps session.StopWatching.
+func (a *payChAPIServer) StopWatching(ctx context.Context, req *pb.StopWatchingReq) (*pb.StopWatchingResp, error) {
+	errResponse := func(err perun.APIError) *pb.StopWatchingResp {
+		return &pb.StopWatchingResp{
+			Error: toGrpcError(err),
+		}
+	}
+
+	sess, err := a.n.GetSession(req.SessionID)
+	if err != nil {
+		return errResponse(err), nil
+	}
+	var chID pchannel.ID
+	copy(chID[:], req.ChID)
+	err2 := sess.StopWatching(ctx, chID)
+	if err2 != nil {
+		return errResponse(err), nil
+	}
+
+	return &pb.StopWatchingResp{Error: nil}, nil
+}
+
+func toProtoResponse(adjEvent pchannel.AdjudicatorEvent,
+) (protoResponse *pb.StartWatchingLedgerChannelResp, err error) {
+	protoResponse = &pb.StartWatchingLedgerChannelResp{}
+	switch e := adjEvent.(type) {
+	case *pchannel.RegisteredEvent:
+		protoResponse.Response, err = toGrpcRegisteredEvent(e)
+	case *pchannel.ProgressedEvent:
+		protoResponse.Response, err = toGrpcProgressedEvent(e)
+	case *pchannel.ConcludedEvent:
+		protoResponse.Response, err = toGrpcConcludedEvent(e)
+	default:
+		apiErr := perun.NewAPIErrUnknownInternal(errors.New("unknown even type"))
+		protoResponse.Response = &pb.StartWatchingLedgerChannelResp_Error{
+			Error: toGrpcError(apiErr),
+		}
+	}
+	return protoResponse, nil
+}
+
+func toGrpcRegisteredEvent(event *pchannel.RegisteredEvent,
+) (grpcEvent *pb.StartWatchingLedgerChannelResp_RegisteredEvent, err error) {
+	grpcEvent = &pb.StartWatchingLedgerChannelResp_RegisteredEvent{}
+
+	grpcEvent.RegisteredEvent.AdjudicatorEventBase = toGrpcAdjudicatorEventBase(&event.AdjudicatorEventBase)
+	if err != nil {
+		return nil, errors.WithMessage(err, "parsing adjudicator event base")
+	}
+	grpcEvent.RegisteredEvent.State, err = toGrpcState(event.State)
+	if err != nil {
+		return nil, errors.WithMessage(err, "parsing state")
+	}
+	grpcEvent.RegisteredEvent.Sigs = make([][]byte, len(event.Sigs))
+	for i := range event.Sigs {
+		grpcEvent.RegisteredEvent.Sigs[i] = []byte(event.Sigs[i])
+	}
+	return grpcEvent, nil
+}
+
+func toGrpcProgressedEvent(event *pchannel.ProgressedEvent,
+) (grpcEvent *pb.StartWatchingLedgerChannelResp_ProgressedEvent, err error) {
+	grpcEvent = &pb.StartWatchingLedgerChannelResp_ProgressedEvent{}
+	grpcEvent.ProgressedEvent.AdjudicatorEventBase = toGrpcAdjudicatorEventBase(&event.AdjudicatorEventBase)
+	if err != nil {
+		return nil, errors.WithMessage(err, "parsing adjudicator event base")
+	}
+	grpcEvent.ProgressedEvent.State, err = toGrpcState(event.State)
+	if err != nil {
+		return nil, errors.WithMessage(err, "parsing state")
+	}
+	grpcEvent.ProgressedEvent.Idx = uint32(event.Idx)
+	return grpcEvent, nil
+}
+
+func toGrpcConcludedEvent(event *pchannel.ConcludedEvent,
+) (grpcEvent *pb.StartWatchingLedgerChannelResp_ConcludedEvent, err error) {
+	grpcEvent = &pb.StartWatchingLedgerChannelResp_ConcludedEvent{}
+	grpcEvent.ConcludedEvent = &pb.ConcludedEvent{}
+	grpcEvent.ConcludedEvent.AdjudicatorEventBase = toGrpcAdjudicatorEventBase(&event.AdjudicatorEventBase)
+	if err != nil {
+		return nil, errors.WithMessage(err, "parsing adjudicator event base")
+	}
+	return grpcEvent, nil
+}
+
+func toGrpcAdjudicatorEventBase(event *pchannel.AdjudicatorEventBase) (protoEvent *pb.AdjudicatorEventBase) {
+	// Does a type switch on the underlying timeout type, because timeout cannot be passed as such
+	// TODO: Make timeout wire friendly.
+	protoEvent = &pb.AdjudicatorEventBase{}
+	protoEvent.ChID = event.IDV[:]
+	protoEvent.Version = event.VersionV
+	protoEvent.Timeout = &pb.AdjudicatorEventBase_Timeout{}
+	switch t := event.TimeoutV.(type) {
+	case *pchannel.ElapsedTimeout:
+		protoEvent.Timeout.Sec = -1
+		protoEvent.Timeout.Type = pb.AdjudicatorEventBase_elapsed
+	case *pchannel.TimeTimeout:
+		protoEvent.Timeout.Sec = t.Unix()
+		protoEvent.Timeout.Type = pb.AdjudicatorEventBase_time
+	case *pethchannel.BlockTimeout:
+		// TODO: Validate if number is less than int64max before type casting.
+		protoEvent.Timeout.Sec = int64(t.Time)
+		protoEvent.Timeout.Type = pb.AdjudicatorEventBase_ethBlock
+	}
+	return protoEvent
+}
+
+func toGrpcState(state *channel.State) (protoState *pb.State, err error) {
+	protoState = &pb.State{}
+
+	protoState.Id = make([]byte, len(state.ID))
+	copy(protoState.Id, state.ID[:])
+	protoState.Version = state.Version
+	protoState.IsFinal = state.IsFinal
+	protoState.Allocation, err = fromAllocation(state.Allocation)
+	if err != nil {
+		return nil, errors.WithMessage(err, "allocation")
+	}
+	protoState.App, protoState.Data, err = fromAppAndData(state.App, state.Data)
+	return protoState, err
+}
+
+func fromAppAndData(app channel.App, data channel.Data) (protoApp, protoData []byte, err error) {
+	if channel.IsNoApp(app) {
+		return []byte{}, []byte{}, nil
+	}
+	protoApp, err = app.Def().MarshalBinary()
+	if err != nil {
+		return []byte{}, []byte{}, err
+	}
+	protoData, err = data.MarshalBinary()
+	return protoApp, protoData, err
+}
+
+func fromAllocation(alloc channel.Allocation) (protoAlloc *pb.Allocation, err error) {
+	protoAlloc = &pb.Allocation{}
+	protoAlloc.Assets = make([][]byte, len(alloc.Assets))
+	for i := range alloc.Assets {
+		protoAlloc.Assets[i], err = alloc.Assets[i].MarshalBinary()
+		if err != nil {
+			return nil, errors.WithMessagef(err, "%d'th asset", i)
+		}
+	}
+	locked := make([]*pb.SubAlloc, len(alloc.Locked))
+	for i := range alloc.Locked {
+		locked[i], err = fromSubAlloc(alloc.Locked[i])
+		if err != nil {
+			return nil, errors.WithMessagef(err, "%d'th sub alloc", i)
+		}
+	}
+	protoAlloc.Balances, err = fromBalances(alloc.Balances)
+	return protoAlloc, err
+}
+
+func fromSubAlloc(subAlloc channel.SubAlloc) (protoSubAlloc *pb.SubAlloc, err error) {
+	protoSubAlloc = &pb.SubAlloc{}
+	protoSubAlloc.Id = make([]byte, len(subAlloc.ID))
+	copy(protoSubAlloc.Id, subAlloc.ID[:])
+	protoSubAlloc.IndexMap = &pb.IndexMap{IndexMap: fromIndexMap(subAlloc.IndexMap)}
+	protoSubAlloc.Bals, err = fromBalance(subAlloc.Bals)
+	return protoSubAlloc, err
+}
+
+func fromIndexMap(indexMap []pchannel.Index) (protoIndexMap []uint32) {
+	protoIndexMap = make([]uint32, len(indexMap))
+	for i := range indexMap {
+		protoIndexMap[i] = uint32(indexMap[i])
+	}
+	return protoIndexMap
+}
+
+func fromBalances(balances channel.Balances) (protoBalances *pb.Balances, err error) {
+	protoBalances = &pb.Balances{
+		Balances: make([]*pb.Balance, len(balances)),
+	}
+	for i := range balances {
+		protoBalances.Balances[i], err = fromBalance(balances[i])
+		if err != nil {
+			return nil, errors.WithMessagef(err, "%d'th balance", i)
+		}
+	}
+	return protoBalances, nil
+}
+
+func fromBalance(balance []channel.Bal) (protoBalance *pb.Balance, err error) {
+	protoBalance = &pb.Balance{
+		Balance: make([][]byte, len(balance)),
+	}
+	for i := range balance {
+		if balance[i] == nil {
+			return nil, fmt.Errorf("%d'th amount is nil", i) //nolint:goerr113  // We do not want to define this as constant error.
+		}
+		if balance[i].Sign() == -1 {
+			return nil, fmt.Errorf("%d'th amount is negative", i) //nolint:goerr113  // We do not want to define this as constant error.
+		}
+		protoBalance.Balance[i] = balance[i].Bytes()
+	}
+	return protoBalance, nil
+}
+
 func fromGrpcFundingReq(protoReq *pb.FundReq) (req pchannel.FundingReq, err error) {
 	if req.Params, err = fromGrpcParams(protoReq.Params); err != nil {
 		return req, err
@@ -809,6 +1090,38 @@ func toWalletAddrs(protoAddrs [][]byte) ([]pwallet.Address, error) {
 		}
 	}
 	return addrs, nil
+}
+
+func toSignedState(protoSignedState *pb.StartWatchingLedgerChannelReq) (signedState *channel.SignedState, err error) {
+	signedState = &channel.SignedState{}
+	signedState.Params, err = fromGrpcParams(protoSignedState.Params)
+	if err != nil {
+		return nil, err
+	}
+	signedState.State, err = fromGrpcState(protoSignedState.State)
+	if err != nil {
+		return nil, err
+	}
+	sigs := make([]pwallet.Sig, len(protoSignedState.Sigs))
+	for i := range sigs {
+		sigs[i] = pwallet.Sig(protoSignedState.Sigs[i])
+	}
+	return signedState, nil
+
+}
+
+func toTransaction(protoSignedState *pb.StartWatchingLedgerChannelReq) (transaction *channel.Transaction, err error) {
+	transaction = &channel.Transaction{}
+	transaction.State, err = fromGrpcState(protoSignedState.State)
+	if err != nil {
+		return nil, err
+	}
+	sigs := make([]pwallet.Sig, len(protoSignedState.Sigs))
+	for i := range sigs {
+		sigs[i] = pwallet.Sig(protoSignedState.Sigs[i])
+	}
+	return transaction, nil
+
 }
 
 func fromGrpcState(protoState *pb.State) (state *channel.State, err error) {
