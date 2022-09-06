@@ -439,6 +439,11 @@ type SessionAPI interface {
 	RegisterAssetERC20(asset pchannel.Asset, token, acc pwallet.Address) bool
 	IsAssetRegistered(asset pchannel.Asset) bool
 
+	Register(context.Context, pchannel.AdjudicatorReq, []pchannel.SignedState) APIError
+	Withdraw(context.Context, pchannel.AdjudicatorReq, pchannel.StateMap) APIError
+	Progress(context.Context, pchannel.ProgressReq) APIError
+	Subscribe(context.Context, pchannel.ID) (pchannel.AdjudicatorSubscription, APIError)
+
 	StartWatchingLedgerChannel(context.Context, channel.SignedState) (
 		pwatcher.StatesPub, pwatcher.AdjudicatorSub, APIError)
 	StartWatchingSubChannel(ctx context.Context, parent channel.ID, signedState pchannel.SignedState) (
