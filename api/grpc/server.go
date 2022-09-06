@@ -756,6 +756,111 @@ func (a *payChAPIServer) IsAssetRegistered(ctx context.Context, req *pb.IsAssetR
 	}, nil
 }
 
+// Register wraps session.Register.
+func (a *payChAPIServer) Register(ctx context.Context, req *pb.RegisterReq) (*pb.RegisterResp, error) {
+	errResponse := func(err perun.APIError) *pb.RegisterResp {
+		return &pb.RegisterResp{
+			Error: toGrpcError(err),
+		}
+	}
+
+	sess, err := a.n.GetSession(req.SessionID)
+	if err != nil {
+		return errResponse(err), nil
+	}
+	adjReq, err2 := fromGrpcAdjReq(req.AdjReq)
+	if err2 != nil {
+		return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
+	}
+	signedStates := make([]pchannel.SignedState, len(req.SignedStates))
+	for i := range signedStates {
+		signedStates[i], err2 = fromGrpcSignedState(req.SignedStates[i])
+		if err2 != nil {
+			return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
+		}
+	}
+
+	err2 = sess.Register(ctx, adjReq, signedStates)
+	if err2 != nil {
+		return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
+	}
+
+	return &pb.RegisterResp{
+		Error: nil,
+	}, nil
+}
+
+// Withdraw wraps session.Withdraw.
+func (a *payChAPIServer) Withdraw(ctx context.Context, req *pb.WithdrawReq) (*pb.WithdrawResp, error) {
+	errResponse := func(err perun.APIError) *pb.WithdrawResp {
+		return &pb.WithdrawResp{
+			Error: toGrpcError(err),
+		}
+	}
+
+	sess, err := a.n.GetSession(req.SessionID)
+	if err != nil {
+		return errResponse(err), nil
+	}
+	adjReq, err2 := fromGrpcAdjReq(req.AdjReq)
+	if err2 != nil {
+		return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
+	}
+	stateMap := channel.StateMap(make(map[pchannel.ID]*pchannel.State))
+
+	for i := range req.StateMap {
+		var id pchannel.ID
+		copy(id[:], req.StateMap[i].Id)
+		stateMap[id], err2 = fromGrpcState(req.StateMap[i].State)
+		if err2 != nil {
+			return errResponse(err), nil
+		}
+	}
+
+	err2 = sess.Withdraw(ctx, adjReq, stateMap)
+	if err2 != nil {
+		return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
+	}
+
+	return &pb.WithdrawResp{
+		Error: nil,
+	}, nil
+}
+
+// Progress wraps session.Progress.
+func (a *payChAPIServer) Progress(ctx context.Context, req *pb.ProgressReq) (*pb.ProgressResp, error) {
+	errResponse := func(err perun.APIError) *pb.ProgressResp {
+		return &pb.ProgressResp{
+			Error: toGrpcError(err),
+		}
+	}
+
+	sess, err := a.n.GetSession(req.SessionID)
+	if err != nil {
+		return errResponse(err), nil
+	}
+	var progReq perun.ProgressReq
+	var err2 error
+	progReq.AdjudicatorReq, err2 = fromGrpcAdjReq(req.AdjReq)
+	if err2 != nil {
+		return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
+	}
+	progReq.NewState, err2 = fromGrpcState(req.NewState)
+	if err2 != nil {
+		return errResponse(err), nil
+	}
+	copy(progReq.Sig, req.Sig)
+
+	err2 = sess.Progress(ctx, progReq)
+	if err2 != nil {
+		return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
+	}
+
+	return &pb.ProgressResp{
+		Error: nil,
+	}, nil
+}
+
 // StartWatchingLedgerChannel wraps session.StartWatchingLedgerChannel.
 func (a *payChAPIServer) StartWatchingLedgerChannel(srv pb.Payment_API_StartWatchingLedgerChannelServer) error {
 	req, err := srv.Recv()
@@ -1033,6 +1138,23 @@ func fromBalance(balance []channel.Bal) (protoBalance *pb.Balance, err error) {
 	return protoBalance, nil
 }
 
+func fromGrpcAdjReq(protoReq *pb.AdjudicatorReq) (req perun.AdjudicatorReq, err error) {
+	if req.Params, err = fromGrpcParams(protoReq.Params); err != nil {
+		return req, err
+	}
+	if req.Tx, err = fromGrpcTransaction(protoReq.Tx); err != nil {
+		return req, err
+	}
+	req.Acc = pwallet.NewAddress()
+	err = req.Acc.UnmarshalBinary(protoReq.Acc)
+	if err != nil {
+		return req, err
+	}
+	req.Idx = pchannel.Index(protoReq.Idx)
+	req.Secondary = protoReq.Secondary
+	return req, nil
+}
+
 func fromGrpcFundingReq(protoReq *pb.FundReq) (req pchannel.FundingReq, err error) {
 	if req.Params, err = fromGrpcParams(protoReq.Params); err != nil {
 		return req, err
@@ -1092,6 +1214,35 @@ func toWalletAddrs(protoAddrs [][]byte) ([]pwallet.Address, error) {
 	return addrs, nil
 }
 
+func fromGrpcSignedState(protoSignedState *pb.SignedState) (signedState channel.SignedState, err error) {
+	signedState.Params, err = fromGrpcParams(protoSignedState.Params)
+	if err != nil {
+		return signedState, err
+	}
+	signedState.State, err = fromGrpcState(protoSignedState.State)
+	if err != nil {
+		return signedState, err
+	}
+	sigs := make([]pwallet.Sig, len(protoSignedState.Sigs))
+	for i := range sigs {
+		sigs[i] = pwallet.Sig(protoSignedState.Sigs[i])
+	}
+	return signedState, nil
+}
+
+func fromGrpcTransaction(protoSignedState *pb.Transaction) (transaction pchannel.Transaction, err error) {
+	transaction.State, err = fromGrpcState(protoSignedState.State)
+	if err != nil {
+		return transaction, err
+	}
+	transaction.Sigs = make([]pwallet.Sig, len(protoSignedState.Sigs))
+	for i := range transaction.Sigs {
+		transaction.Sigs[i] = pwallet.Sig(protoSignedState.Sigs[i])
+	}
+	return transaction, nil
+
+}
+
 func toSignedState(protoSignedState *pb.StartWatchingLedgerChannelReq) (signedState *channel.SignedState, err error) {
 	signedState = &channel.SignedState{}
 	signedState.Params, err = fromGrpcParams(protoSignedState.Params)
@@ -1116,9 +1267,9 @@ func toTransaction(protoSignedState *pb.StartWatchingLedgerChannelReq) (transact
 	if err != nil {
 		return nil, err
 	}
-	sigs := make([]pwallet.Sig, len(protoSignedState.Sigs))
-	for i := range sigs {
-		sigs[i] = pwallet.Sig(protoSignedState.Sigs[i])
+	transaction.Sigs = make([]pwallet.Sig, len(protoSignedState.Sigs))
+	for i := range transaction.Sigs {
+		transaction.Sigs[i] = pwallet.Sig(protoSignedState.Sigs[i])
 	}
 	return transaction, nil
 
