@@ -681,8 +681,9 @@ message SignedState {
 }
 
 message RegisterReq {
-    AdjudicatorReq adjReq = 1;
-    repeated SignedState signedStates = 2;
+    string sessionID = 1;
+    AdjudicatorReq adjReq = 2;
+    repeated SignedState signedStates = 3;
 }
 
 message RegisterResp {
@@ -695,8 +696,9 @@ message StateMap {
 }
 
 message WithdrawReq {
-    AdjudicatorReq adjReq = 1;
-    repeated StateMap stateMap = 2;
+    string sessionID = 1;
+    AdjudicatorReq adjReq = 2;
+    repeated StateMap stateMap = 3;
 }
 
 message WithdrawResp {
@@ -704,9 +706,10 @@ message WithdrawResp {
 }
 
 message ProgressReq {
-    AdjudicatorReq adjReq = 1;
-    State newState = 2;
-    bytes sig = 3;
+    string sessionID = 1;
+    AdjudicatorReq adjReq = 2;
+    State newState = 3;
+    bytes sig = 4;
 }
 
 message ProgressResp {
@@ -714,7 +717,8 @@ message ProgressResp {
 }
 
 message SubscribeReq {
-    bytes chID = 1;
+    string sessionID = 1;
+    bytes chID = 2;
 }
 
 message SubscribeResp {
