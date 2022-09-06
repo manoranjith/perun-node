@@ -155,6 +155,33 @@ type Funder interface {
 	IsAssetRegistered(asset pchannel.Asset) bool
 }
 
+// AdjudicatorReq redefines pchannel.AdjudicatorReq with a slight modification.
+//
+// It uses pwallet.Address type instead of pwallet.Account for acc, which is
+// used for signing withdrawal auth.
+//
+// Because, only addresses can be passed over the wire or from external sources.
+// The corresponding account will be initialized by the API using its wallet.
+type AdjudicatorReq struct {
+	Params    *pchannel.Params
+	Acc       pwallet.Address
+	Tx        pchannel.Transaction
+	Idx       pchannel.Index // Always the own index
+	Secondary bool           // Optimized secondary call protocol
+}
+
+// AdjudicatorReq redefines pchannel.AdjudicatorReq with a slight modification.
+//
+// It uses redefined AdjudicatorReq type instead of pchannel.AdjudicatorReq.
+//
+// See documentation of AdjudicatorReq, for details on why this redefined type
+// is used in session API.
+type ProgressReq struct {
+	AdjudicatorReq                 // Tx should refer to the currently registered state
+	NewState       *pchannel.State // New state to progress into
+	Sig            pwallet.Sig     // Own signature on the new state
+}
+
 // WalletBackend wraps the methods for instantiating wallets and accounts that are specific to a blockchain platform.
 type WalletBackend interface {
 	ParseAddr(string) (pwallet.Address, error)
@@ -439,9 +466,9 @@ type SessionAPI interface {
 	RegisterAssetERC20(asset pchannel.Asset, token, acc pwallet.Address) bool
 	IsAssetRegistered(asset pchannel.Asset) bool
 
-	Register(context.Context, pchannel.AdjudicatorReq, []pchannel.SignedState) APIError
-	Withdraw(context.Context, pchannel.AdjudicatorReq, pchannel.StateMap) APIError
-	Progress(context.Context, pchannel.ProgressReq) APIError
+	Register(context.Context, AdjudicatorReq, []pchannel.SignedState) APIError
+	Withdraw(context.Context, AdjudicatorReq, pchannel.StateMap) APIError
+	Progress(context.Context, ProgressReq) APIError
 	Subscribe(context.Context, pchannel.ID) (pchannel.AdjudicatorSubscription, APIError)
 
 	StartWatchingLedgerChannel(context.Context, channel.SignedState) (
