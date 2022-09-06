@@ -217,11 +217,11 @@ func (_m *SessionAPI) OpenCh(_a0 context.Context, _a1 perun.BalInfo, _a2 perun.A
 }
 
 // Progress provides a mock function with given fields: _a0, _a1
-func (_m *SessionAPI) Progress(_a0 context.Context, _a1 channel.ProgressReq) perun.APIError {
+func (_m *SessionAPI) Progress(_a0 context.Context, _a1 perun.ProgressReq) perun.APIError {
 	ret := _m.Called(_a0, _a1)
 
 	var r0 perun.APIError
-	if rf, ok := ret.Get(0).(func(context.Context, channel.ProgressReq) perun.APIError); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, perun.ProgressReq) perun.APIError); ok {
 		r0 = rf(_a0, _a1)
 	} else {
 		if ret.Get(0) != nil {
@@ -233,11 +233,11 @@ func (_m *SessionAPI) Progress(_a0 context.Context, _a1 channel.ProgressReq) per
 }
 
 // Register provides a mock function with given fields: _a0, _a1, _a2
-func (_m *SessionAPI) Register(_a0 context.Context, _a1 channel.AdjudicatorReq, _a2 []channel.SignedState) perun.APIError {
+func (_m *SessionAPI) Register(_a0 context.Context, _a1 perun.AdjudicatorReq, _a2 []channel.SignedState) perun.APIError {
 	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 perun.APIError
-	if rf, ok := ret.Get(0).(func(context.Context, channel.AdjudicatorReq, []channel.SignedState) perun.APIError); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, perun.AdjudicatorReq, []channel.SignedState) perun.APIError); ok {
 		r0 = rf(_a0, _a1, _a2)
 	} else {
 		if ret.Get(0) != nil {
@@ -427,11 +427,11 @@ func (_m *SessionAPI) UnsubChProposals() perun.APIError {
 }
 
 // Withdraw provides a mock function with given fields: _a0, _a1, _a2
-func (_m *SessionAPI) Withdraw(_a0 context.Context, _a1 channel.AdjudicatorReq, _a2 channel.StateMap) perun.APIError {
+func (_m *SessionAPI) Withdraw(_a0 context.Context, _a1 perun.AdjudicatorReq, _a2 channel.StateMap) perun.APIError {
 	ret := _m.Called(_a0, _a1, _a2)
 
 	var r0 perun.APIError
-	if rf, ok := ret.Get(0).(func(context.Context, channel.AdjudicatorReq, channel.StateMap) perun.APIError); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, perun.AdjudicatorReq, channel.StateMap) perun.APIError); ok {
 		r0 = rf(_a0, _a1, _a2)
 	} else {
 		if ret.Get(0) != nil {
