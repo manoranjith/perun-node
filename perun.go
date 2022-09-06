@@ -435,7 +435,9 @@ type SessionAPI interface {
 
 	DeployAssetERC20(tokenERC20 string) (asset string, _ APIError)
 
-	Funder
+	Fund(context.Context, pchannel.FundingReq) APIError
+	RegisterAssetERC20(asset pchannel.Asset, token, acc pwallet.Address) bool
+	IsAssetRegistered(asset pchannel.Asset) bool
 
 	StartWatchingLedgerChannel(context.Context, channel.SignedState) (
 		pwatcher.StatesPub, pwatcher.AdjudicatorSub, APIError)
