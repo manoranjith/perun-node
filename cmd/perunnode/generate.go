@@ -34,7 +34,7 @@ import (
 )
 
 const (
-	aliceAlias, bobAlias = "alice", "bob"
+	aliceAlias, bobAlias = "charger", "car"
 	apiAlias             = "api"
 	nodeConfigFile       = "node.yaml"
 	sessionConfigFile    = "session.yaml"
