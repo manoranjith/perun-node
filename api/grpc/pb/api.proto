@@ -267,7 +267,8 @@ service Payment_API{
     rpc Register(RegisterReq) returns (RegisterResp){}
     rpc Withdraw(WithdrawReq) returns (WithdrawResp){}
     rpc Progress(ProgressReq) returns (ProgressResp){}
-    rpc Subscribe(ProgressReq) returns (stream ProgressResp){}
+    rpc Subscribe(SubscribeReq) returns (stream SubscribeResp){}
+    rpc Unsubscribe(UnsubscribeReq) returns (UnsubscribeResp){}
 
 }
 
@@ -728,4 +729,13 @@ message SubscribeResp {
         ConcludedEvent concludedEvent = 3;
         MsgError error = 4;
     }
+}
+
+message UnsubscribeReq {
+    string sessionID = 1;
+    bytes chID = 2;
+}
+
+message UnsubscribeResp {
+    MsgError error = 1;
 }

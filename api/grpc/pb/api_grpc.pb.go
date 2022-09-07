@@ -50,7 +50,8 @@ type Payment_APIClient interface {
 	Register(ctx context.Context, in *RegisterReq, opts ...grpc.CallOption) (*RegisterResp, error)
 	Withdraw(ctx context.Context, in *WithdrawReq, opts ...grpc.CallOption) (*WithdrawResp, error)
 	Progress(ctx context.Context, in *ProgressReq, opts ...grpc.CallOption) (*ProgressResp, error)
-	Subscribe(ctx context.Context, in *ProgressReq, opts ...grpc.CallOption) (Payment_API_SubscribeClient, error)
+	Subscribe(ctx context.Context, in *SubscribeReq, opts ...grpc.CallOption) (Payment_API_SubscribeClient, error)
+	Unsubscribe(ctx context.Context, in *UnsubscribeReq, opts ...grpc.CallOption) (*UnsubscribeResp, error)
 }
 
 type payment_APIClient struct {
@@ -381,7 +382,7 @@ func (c *payment_APIClient) Progress(ctx context.Context, in *ProgressReq, opts 
 	return out, nil
 }
 
-func (c *payment_APIClient) Subscribe(ctx context.Context, in *ProgressReq, opts ...grpc.CallOption) (Payment_API_SubscribeClient, error) {
+func (c *payment_APIClient) Subscribe(ctx context.Context, in *SubscribeReq, opts ...grpc.CallOption) (Payment_API_SubscribeClient, error) {
 	stream, err := c.cc.NewStream(ctx, &Payment_API_ServiceDesc.Streams[3], "/pb.Payment_API/Subscribe", opts...)
 	if err != nil {
 		return nil, err
@@ -397,7 +398,7 @@ func (c *payment_APIClient) Subscribe(ctx context.Context, in *ProgressReq, opts
 }
 
 type Payment_API_SubscribeClient interface {
-	Recv() (*ProgressResp, error)
+	Recv() (*SubscribeResp, error)
 	grpc.ClientStream
 }
 
@@ -405,12 +406,21 @@ type payment_APISubscribeClient struct {
 	grpc.ClientStream
 }
 
-func (x *payment_APISubscribeClient) Recv() (*ProgressResp, error) {
-	m := new(ProgressResp)
+func (x *payment_APISubscribeClient) Recv() (*SubscribeResp, error) {
+	m := new(SubscribeResp)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
 	return m, nil
+}
+
+func (c *payment_APIClient) Unsubscribe(ctx context.Context, in *UnsubscribeReq, opts ...grpc.CallOption) (*UnsubscribeResp, error) {
+	out := new(UnsubscribeResp)
+	err := c.cc.Invoke(ctx, "/pb.Payment_API/Unsubscribe", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 // Payment_APIServer is the server API for Payment_API service.
@@ -445,7 +455,8 @@ type Payment_APIServer interface {
 	Register(context.Context, *RegisterReq) (*RegisterResp, error)
 	Withdraw(context.Context, *WithdrawReq) (*WithdrawResp, error)
 	Progress(context.Context, *ProgressReq) (*ProgressResp, error)
-	Subscribe(*ProgressReq, Payment_API_SubscribeServer) error
+	Subscribe(*SubscribeReq, Payment_API_SubscribeServer) error
+	Unsubscribe(context.Context, *UnsubscribeReq) (*UnsubscribeResp, error)
 	mustEmbedUnimplementedPayment_APIServer()
 }
 
@@ -537,8 +548,11 @@ func (UnimplementedPayment_APIServer) Withdraw(context.Context, *WithdrawReq) (*
 func (UnimplementedPayment_APIServer) Progress(context.Context, *ProgressReq) (*ProgressResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Progress not implemented")
 }
-func (UnimplementedPayment_APIServer) Subscribe(*ProgressReq, Payment_API_SubscribeServer) error {
+func (UnimplementedPayment_APIServer) Subscribe(*SubscribeReq, Payment_API_SubscribeServer) error {
 	return status.Errorf(codes.Unimplemented, "method Subscribe not implemented")
+}
+func (UnimplementedPayment_APIServer) Unsubscribe(context.Context, *UnsubscribeReq) (*UnsubscribeResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Unsubscribe not implemented")
 }
 func (UnimplementedPayment_APIServer) mustEmbedUnimplementedPayment_APIServer() {}
 
@@ -1072,7 +1086,7 @@ func _Payment_API_Progress_Handler(srv interface{}, ctx context.Context, dec fun
 }
 
 func _Payment_API_Subscribe_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(ProgressReq)
+	m := new(SubscribeReq)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
@@ -1080,7 +1094,7 @@ func _Payment_API_Subscribe_Handler(srv interface{}, stream grpc.ServerStream) e
 }
 
 type Payment_API_SubscribeServer interface {
-	Send(*ProgressResp) error
+	Send(*SubscribeResp) error
 	grpc.ServerStream
 }
 
@@ -1088,8 +1102,26 @@ type payment_APISubscribeServer struct {
 	grpc.ServerStream
 }
 
-func (x *payment_APISubscribeServer) Send(m *ProgressResp) error {
+func (x *payment_APISubscribeServer) Send(m *SubscribeResp) error {
 	return x.ServerStream.SendMsg(m)
+}
+
+func _Payment_API_Unsubscribe_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnsubscribeReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(Payment_APIServer).Unsubscribe(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Payment_API/Unsubscribe",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(Payment_APIServer).Unsubscribe(ctx, req.(*UnsubscribeReq))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 // Payment_API_ServiceDesc is the grpc.ServiceDesc for Payment_API service.
@@ -1198,6 +1230,10 @@ var Payment_API_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Progress",
 			Handler:    _Payment_API_Progress_Handler,
+		},
+		{
+			MethodName: "Unsubscribe",
+			Handler:    _Payment_API_Unsubscribe_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

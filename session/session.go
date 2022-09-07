@@ -214,7 +214,11 @@ func New(cfg Config, currencyRegistry perun.ROCurrencyRegistry, contractRegistry
 			client: funderClient,
 		}
 
-		adjudicator = chain.NewAdjudicator(cfg.Adjudicator, user.OnChain.Addr)
+		adjudicator = &grpcAdjudicator{
+			apiKey: cfg.FundingAPIKey,
+			client: funderClient,
+		}
+
 	default:
 		err = errors.New("should be local or grpc")
 		return nil, perun.NewAPIErrInvalidConfig(err, "fundingType", cfg.FundingAPIKey)

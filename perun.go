@@ -471,6 +471,8 @@ type SessionAPI interface {
 	Progress(context.Context, ProgressReq) APIError
 	Subscribe(context.Context, pchannel.ID) (pchannel.AdjudicatorSubscription, APIError)
 
+	// pchannel.Adjudicator
+
 	StartWatchingLedgerChannel(context.Context, channel.SignedState) (
 		pwatcher.StatesPub, pwatcher.AdjudicatorSub, APIError)
 	StartWatchingSubChannel(ctx context.Context, parent channel.ID, signedState pchannel.SignedState) (

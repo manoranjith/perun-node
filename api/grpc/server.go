@@ -61,6 +61,8 @@ type payChAPIServer struct {
 	chProposalsNotif map[string]chan bool
 	chUpdatesNotif   map[string]map[string]chan bool
 
+	subscribes map[string]map[pchannel.ID]pchannel.AdjudicatorSubscription
+
 	// chWatcher map[string]map[string]chan bool
 }
 
@@ -71,6 +73,7 @@ func ListenAndServePayChAPI(n perun.NodeAPI, grpcPort string) error {
 		n:                n,
 		chProposalsNotif: make(map[string]chan bool),
 		chUpdatesNotif:   make(map[string]map[string]chan bool),
+		subscribes:       make(map[string]map[pchannel.ID]pchannel.AdjudicatorSubscription),
 	}
 
 	listener, err := net.Listen("tcp", grpcPort)
@@ -151,6 +154,7 @@ func (a *payChAPIServer) OpenSession(ctx context.Context, req *pb.OpenSessionReq
 
 	a.Lock()
 	a.chUpdatesNotif[sessionID] = make(map[string]chan bool)
+	a.subscribes[sessionID] = make(map[pchannel.ID]pchannel.AdjudicatorSubscription)
 	// a.chWatcher[sessionID] = make(map[string]chan bool)
 	a.Unlock()
 
@@ -861,6 +865,80 @@ func (a *payChAPIServer) Progress(ctx context.Context, req *pb.ProgressReq) (*pb
 	}, nil
 }
 
+// Subscribe wraps session.Subscribe.
+
+func (a *payChAPIServer) Subscribe(req *pb.SubscribeReq, stream pb.Payment_API_SubscribeServer) error {
+	sess, err := a.n.GetSession(req.SessionID)
+	if err != nil {
+		return errors.WithMessage(err, "retrieving session")
+	}
+
+	var chID pchannel.ID
+	copy(chID[:], req.ChID)
+
+	adjSub, err := sess.Subscribe(context.Background(), chID)
+	if err != nil {
+		return errors.WithMessage(err, "setting up subscription")
+	}
+	a.Lock()
+	a.subscribes[req.SessionID][chID] = adjSub
+	a.Unlock()
+
+	// This stream is anyways closed when StopWatching is called for.
+	// Hence, that will act as the exit condition for the loop.
+	go func() {
+		// will return nil, when the sub is closed.
+		// so, we need a mechanism to call close on the server side.
+		// so, add a call Unsubscribe, which simply calls close.
+		for {
+			adjEvent := adjSub.Next()
+			if adjEvent == nil {
+				err := errors.WithMessage(adjSub.Err(), "sub closed with error")
+				notif := &pb.SubscribeResp_Error{
+					Error: toGrpcError(perun.NewAPIErrUnknownInternal(err)),
+				}
+				stream.Send(&pb.SubscribeResp{Response: notif})
+				return
+			}
+			notif, err := toSubscribeResponse(adjEvent)
+			if err != nil {
+				return
+			}
+			err = stream.Send(notif)
+			if err != nil {
+				return
+			}
+		}
+	}()
+
+	return nil
+}
+
+func (a *payChAPIServer) Unsubscribe(ctx context.Context, req *pb.UnsubscribeReq) (*pb.UnsubscribeResp, error) {
+	errResponse := func(err perun.APIError) *pb.UnsubscribeResp {
+		return &pb.UnsubscribeResp{
+			Error: toGrpcError(err),
+		}
+	}
+
+	var chID pchannel.ID
+	copy(chID[:], req.ChID)
+
+	a.Lock()
+	adjSub := a.subscribes[req.SessionID][chID]
+	delete(a.subscribes[req.SessionID], chID)
+	a.Unlock()
+
+	if err := adjSub.Close(); err != nil {
+		return errResponse(perun.NewAPIErrUnknownInternal(errors.WithMessage(err, "retrieving session"))), nil
+
+	}
+
+	return &pb.UnsubscribeResp{
+		Error: nil,
+	}, nil
+}
+
 // StartWatchingLedgerChannel wraps session.StartWatchingLedgerChannel.
 func (a *payChAPIServer) StartWatchingLedgerChannel(srv pb.Payment_API_StartWatchingLedgerChannelServer) error {
 	req, err := srv.Recv()
@@ -959,9 +1037,30 @@ func (a *payChAPIServer) StopWatching(ctx context.Context, req *pb.StopWatchingR
 	return &pb.StopWatchingResp{Error: nil}, nil
 }
 
-func toProtoResponse(adjEvent pchannel.AdjudicatorEvent,
-) (protoResponse *pb.StartWatchingLedgerChannelResp, err error) {
-	protoResponse = &pb.StartWatchingLedgerChannelResp{}
+func toSubscribeResponse(adjEvent pchannel.AdjudicatorEvent) (*pb.SubscribeResp, error) {
+	protoResponse := &pb.SubscribeResp{}
+	switch e := adjEvent.(type) {
+	case *pchannel.RegisteredEvent:
+		registeredEvent, err := toGrpcRegisteredEvent(e)
+		protoResponse.Response = &pb.SubscribeResp_RegisteredEvent{&registeredEvent}
+		return protoResponse, err
+	case *pchannel.ProgressedEvent:
+		progressedEvent, err := toGrpcProgressedEvent(e)
+		protoResponse.Response = &pb.SubscribeResp_ProgressedEvent{&progressedEvent}
+		return protoResponse, err
+	case *pchannel.ConcludedEvent:
+		concludedEvent, err := toGrpcConcludedEvent(e)
+		protoResponse.Response = &pb.SubscribeResp_ConcludedEvent{&concludedEvent}
+		return protoResponse, err
+	default:
+		apiErr := perun.NewAPIErrUnknownInternal(errors.New("unknown even type"))
+		protoResponse.Response = &pb.SubscribeResp_Error{
+			Error: toGrpcError(apiErr),
+		}
+		return protoResponse, nil
+	}
+}
+
 func toProtoResponse(adjEvent pchannel.AdjudicatorEvent) (*pb.StartWatchingLedgerChannelResp, error) {
 	protoResponse := &pb.StartWatchingLedgerChannelResp{}
 	switch e := adjEvent.(type) {

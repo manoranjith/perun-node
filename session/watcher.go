@@ -196,11 +196,11 @@ func fromProtoResponse(protoResponse *pb.StartWatchingLedgerChannelResp,
 ) (adjEvent pchannel.AdjudicatorEvent, err error) {
 	switch e := protoResponse.Response.(type) {
 	case *pb.StartWatchingLedgerChannelResp_RegisteredEvent:
-		adjEvent, err = toGrpcRegisteredEvent(e)
+		adjEvent, err = toGrpcRegisteredEvent(e.RegisteredEvent)
 	case *pb.StartWatchingLedgerChannelResp_ProgressedEvent:
-		adjEvent, err = toGrpcProgressedEvent(e)
+		adjEvent, err = toGrpcProgressedEvent(e.ProgressedEvent)
 	case *pb.StartWatchingLedgerChannelResp_ConcludedEvent:
-		adjEvent, err = toGrpcConcludedEvent(e)
+		adjEvent, err = toGrpcConcludedEvent(e.ConcludedEvent)
 	case *pb.StartWatchingLedgerChannelResp_Error:
 		return nil, err
 	default:
@@ -209,37 +209,34 @@ func fromProtoResponse(protoResponse *pb.StartWatchingLedgerChannelResp,
 	return adjEvent, nil
 }
 
-func toGrpcRegisteredEvent(protoEvent *pb.StartWatchingLedgerChannelResp_RegisteredEvent,
-) (event *pchannel.RegisteredEvent, err error) {
+func toGrpcRegisteredEvent(protoEvent *pb.RegisteredEvent) (event *pchannel.RegisteredEvent, err error) {
 	event = &pchannel.RegisteredEvent{}
-	event.AdjudicatorEventBase = toGrpcAdjudicatorEventBase(protoEvent.RegisteredEvent.AdjudicatorEventBase)
-	event.State, err = toState(protoEvent.RegisteredEvent.State)
+	event.AdjudicatorEventBase = toGrpcAdjudicatorEventBase(protoEvent.AdjudicatorEventBase)
+	event.State, err = toState(protoEvent.State)
 	if err != nil {
 		return nil, errors.WithMessage(err, "parsing state")
 	}
-	event.Sigs = make([]pwallet.Sig, len(protoEvent.RegisteredEvent.Sigs))
-	for i := range protoEvent.RegisteredEvent.Sigs {
-		event.Sigs[i] = pwallet.Sig(protoEvent.RegisteredEvent.Sigs[i])
+	event.Sigs = make([]pwallet.Sig, len(protoEvent.Sigs))
+	for i := range protoEvent.Sigs {
+		event.Sigs[i] = pwallet.Sig(protoEvent.Sigs[i])
 	}
 	return event, nil
 }
 
-func toGrpcProgressedEvent(protoEvent *pb.StartWatchingLedgerChannelResp_ProgressedEvent,
-) (event *pchannel.ProgressedEvent, err error) {
+func toGrpcProgressedEvent(protoEvent *pb.ProgressedEvent) (event *pchannel.ProgressedEvent, err error) {
 	event = &pchannel.ProgressedEvent{}
-	event.AdjudicatorEventBase = toGrpcAdjudicatorEventBase(protoEvent.ProgressedEvent.AdjudicatorEventBase)
-	event.State, err = toState(protoEvent.ProgressedEvent.State)
+	event.AdjudicatorEventBase = toGrpcAdjudicatorEventBase(protoEvent.AdjudicatorEventBase)
+	event.State, err = toState(protoEvent.State)
 	if err != nil {
 		return nil, errors.WithMessage(err, "parsing state")
 	}
-	event.Idx = pchannel.Index(protoEvent.ProgressedEvent.Idx)
+	event.Idx = pchannel.Index(protoEvent.Idx)
 	return event, nil
 }
 
-func toGrpcConcludedEvent(protoEvent *pb.StartWatchingLedgerChannelResp_ConcludedEvent,
-) (event *pchannel.ConcludedEvent, err error) {
+func toGrpcConcludedEvent(protoEvent *pb.ConcludedEvent) (event *pchannel.ConcludedEvent, err error) {
 	event = &pchannel.ConcludedEvent{}
-	event.AdjudicatorEventBase = toGrpcAdjudicatorEventBase(protoEvent.ConcludedEvent.AdjudicatorEventBase)
+	event.AdjudicatorEventBase = toGrpcAdjudicatorEventBase(protoEvent.AdjudicatorEventBase)
 	return event, nil
 }
 
