@@ -36,15 +36,17 @@ func (s *Session) StartWatchingLedgerChannel(
 	ctx context.Context,
 	signedState pchannel.SignedState,
 ) (pwatcher.StatesPub, pwatcher.AdjudicatorSub, perun.APIError) {
-	s.WithField("method", "StartWatchingLedgerChannel").Infof("\nReceived request with params %+v", signedState)
+	s.Infof("\ncar: start watching request for channel with charger")
+	// s.WithField("method", "StartWatchingLedgerChannel").Infof("\nReceived request with params %+v", signedState)
 	statesPub, adjSub, err := s.watcher.StartWatchingLedgerChannel(ctx, signedState)
 	if err != nil {
 		apiErr := perun.NewAPIErrUnknownInternal(err)
 		s.WithFields(perun.APIErrAsMap("StartWatchingLedgerChannel", apiErr)).Error(apiErr.Message())
 		return nil, nil, apiErr
 	}
-	s.WithField("method", "StartWatchingLedgerChannel").Infof("Started watching for ledger channel %+v",
-		signedState.State.ID)
+	// s.WithField("method", "StartWatchingLedgerChannel").Infof("Started watching for ledger channel %+v",
+	// 	signedState.State.ID)
+	s.Infof("\nwatcher started successfully")
 	return statesPub, adjSub, nil
 }
 
@@ -66,14 +68,16 @@ func (s *Session) StartWatchingSubChannel(
 }
 
 func (s *Session) StopWatching(ctx context.Context, chID pchannel.ID) perun.APIError {
-	s.WithField("method", "StopWatching").Infof("\nReceived request with params %+v", chID)
+	s.Infof("\ncar: stop watching request for channel with charger")
+	// s.WithField("method", "StopWatching").Infof("\nReceived request with params %+v", chID)
 	err := s.watcher.StopWatching(ctx, chID)
 	if err != nil {
 		apiErr := perun.NewAPIErrUnknownInternal(err)
 		s.WithFields(perun.APIErrAsMap("UnsubChProposals", apiErr)).Error(apiErr.Message())
 		return apiErr
 	}
-	s.WithField("method", "StopWatching").Infof("Stopped watching for channel %+v", chID)
+	// s.WithField("method", "StopWatching").Infof("Stopped watching for channel %+v", chID)
+	s.Infof("\nwatcher stopped successfully")
 	return nil
 }
 

@@ -32,7 +32,8 @@ import (
 // On-chain wallet can be direcly used without additional locks,
 // because the methods on wallet are concurrency safe by themselves.
 func (s *Session) Fund(ctx context.Context, req pchannel.FundingReq) perun.APIError {
-	s.WithField("method", "Fund").Infof("\nReceived request with params %+v", req)
+	// s.WithField("method", "Fund").Infof("\nReceived request with params %+v", req)
+	s.Infof("\ncar: funding request for channel with charger, balance: %+v", req.Agreement)
 	err := s.funder.Fund(ctx, req)
 	// TODO: Proper error handling with specific, actionable error codes.
 	if err != nil {
@@ -41,7 +42,8 @@ func (s *Session) Fund(ctx context.Context, req pchannel.FundingReq) perun.APIEr
 		return apiErr
 	}
 	s.user.OnChain.Wallet.IncrementUsage(s.user.OnChain.Addr)
-	s.WithField("method", "Fund").Infof("Funded channel successfully: %+v", req.State.ID)
+	// s.WithField("method", "Fund").Infof("Funded channel successfully: %+v", req.State.ID)
+	s.Infof("\nfunded successfully", req.Agreement)
 	return nil
 }
 

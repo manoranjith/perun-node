@@ -271,7 +271,7 @@ func (n *node) Help() []string {
 // If there is an error, it will be one of the following codes:
 // - ErrResourceNotFound when the session ID is not known.
 func (n *node) GetSession(sessionID string) (perun.SessionAPI, perun.APIError) {
-	n.WithField("method", "GetSession").Info("Received request with params:", sessionID)
+	// n.WithField("method", "GetSession").Info("Received request with params:", sessionID)
 
 	n.Lock()
 	sess, ok := n.sessions[sessionID]
@@ -281,6 +281,6 @@ func (n *node) GetSession(sessionID string) (perun.SessionAPI, perun.APIError) {
 		n.WithFields(perun.APIErrAsMap("GetSession (internal)", apiErr)).Error(apiErr.Message())
 		return nil, apiErr
 	}
-	n.WithField("method", "GetSession").Info("Session retrieved:")
+	// n.WithField("method", "GetSession").Info("Session retrieved:")
 	return sess, nil
 }

@@ -31,7 +31,8 @@ func (s *Session) Register(
 	adjReq perun.AdjudicatorReq,
 	signedStates []pchannel.SignedState,
 ) perun.APIError {
-	s.WithField("method", "Register").Infof("\nReceived request with params %+v, %+v", adjReq, signedStates)
+	s.Infof("\ncar: register request for channel with charger, balance: %+v", adjReq.Tx.Balances)
+	// s.WithField("method", "Register").Infof("\nReceived request with params %+v, %+v", adjReq, signedStates)
 
 	pAdjReq, err := toPChannelAdjudicatorReq(adjReq, s.user.OffChain.Wallet)
 	if err != nil {
@@ -47,6 +48,7 @@ func (s *Session) Register(
 		return apiErr
 	}
 	s.WithField("method", "Register").Infof("Registered successfully: %+v ", adjReq.Params.ID())
+	s.Infof("\nregistered successfully")
 	return nil
 }
 
@@ -55,7 +57,8 @@ func (s *Session) Withdraw(
 	adjReq perun.AdjudicatorReq,
 	stateMap pchannel.StateMap,
 ) perun.APIError {
-	s.WithField("method", "Withdraw").Infof("\nReceived request with params %+v, %+v", adjReq, stateMap)
+	s.Infof("\ncar: withdraw request for channel with charger, balance: %+v", adjReq.Tx.Balances)
+	// s.WithField("method", "Withdraw").Infof("\nReceived request with params %+v, %+v", adjReq, stateMap)
 
 	pAdjReq, err := toPChannelAdjudicatorReq(adjReq, s.user.OffChain.Wallet)
 	if err != nil {
@@ -71,7 +74,8 @@ func (s *Session) Withdraw(
 		return apiErr
 	}
 	s.user.OnChain.Wallet.DecrementUsage(s.user.OnChain.Addr)
-	s.WithField("method", "Withdraw").Infof("Withdrawn successfully: %+v ", adjReq.Params.ID())
+	// s.WithField("method", "Withdraw").Infof("Withdrawn successfully: %+v ", adjReq.Params.ID())
+	s.Infof("\nwithdrawn successfully")
 	return nil
 }
 
@@ -99,7 +103,8 @@ func (s *Session) Subscribe(
 	ctx context.Context,
 	chID pchannel.ID,
 ) (pchannel.AdjudicatorSubscription, perun.APIError) {
-	s.WithField("method", "Subscribe").Infof("\nReceived request with params %+v", chID)
+	s.Infof("\ncar: subscribe request for channel with charger")
+	// s.WithField("method", "Subscribe").Infof("\nReceived request with params %+v", chID)
 
 	adjSub, err := s.adjudicator.Subscribe(ctx, chID)
 	if err != nil {
@@ -107,7 +112,7 @@ func (s *Session) Subscribe(
 		s.WithFields(perun.APIErrAsMap("Progress", apiErr)).Error(apiErr.Message())
 		return nil, apiErr
 	}
-	s.WithField("method", "Subscribe").Infof("Subscribed successfully: %+v ", chID)
+	s.Infof("\nsubscribed successfully")
 	return adjSub, nil
 }
 
