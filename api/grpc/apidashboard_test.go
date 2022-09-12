@@ -47,7 +47,7 @@ func Test_InitDashboard(t *testing.T) {
 	d.ChannelRegistered([]string{"car", "charger"}, []string{"2", "1"})
 
 	d.PrintBlank()
-	d.ChannelConcluded([]string{"car", "charger"}, []string{"0", "3"})
+	d.ChannelConcluded()
 
 	d.PrintBlank()
 	d.ChannelWithdrawn([]string{"car", "charger"}, []string{"2", "1"})

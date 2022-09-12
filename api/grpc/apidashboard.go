@@ -130,12 +130,8 @@ func (d Dashboard) ChannelRegistered(parts, balances []string) {
 	d.PrintStringLeftAligned(fmt.Sprintf("Channel registered on the chain: %v %v %s", parts, balances, curr))
 }
 
-func (d Dashboard) ChannelConcluded(parts, balances []string) {
-	d.PrintStringLeftAligned(fmt.Sprintf("Channel concluded on the chain: %v %v %s", parts, balances, curr))
-}
-
-func (d Dashboard) ChannelWithdrawn(parts, balances []string) {
-	d.PrintStringLeftAligned(fmt.Sprintf("Channel concluded on the chain: %v %v %s", parts, balances, curr))
+func (d Dashboard) ChannelConcluded() {
+	d.PrintStringLeftAligned(fmt.Sprintf("Channel concluded on the chain"))
 }
 
 func (d Dashboard) WithdrawRequest(parts, balances []string) {
