@@ -733,15 +733,8 @@ func (a *payChAPIServer) Fund(ctx context.Context, req *pb.FundReq) (*pb.FundRes
 		return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
 	}
 
-	currencies := []perun.Currency{a.currRegistry.Currency(currency.ETHSymbol)}
-	parts := make([]string, len(req2.Params.Parts))
-	for i := range req2.Params.Parts {
-		parts[i] = a.partsMap[req2.Params.Parts[i].String()]
-	}
-
-	balInfo := makeBalInfoFromState(parts, currencies, req2.State)
-
 	if a.APIServerEnabled {
+		balInfo := a.GetBalInfo(req2.State, req2.Params)
 		D.FundingRequest(balInfo.Parts, balInfo.Bals[0])
 	}
 
@@ -753,6 +746,15 @@ func (a *payChAPIServer) Fund(ctx context.Context, req *pb.FundReq) (*pb.FundRes
 	return &pb.FundResp{
 		Error: nil,
 	}, nil
+}
+
+func (a *payChAPIServer) GetBalInfo(state *pchannel.State, params *pchannel.Params) perun.BalInfo {
+	currencies := []perun.Currency{a.currRegistry.Currency(currency.ETHSymbol)}
+	parts := make([]string, len(params.Parts))
+	for i := range params.Parts {
+		parts[i] = a.partsMap[params.Parts[i].String()]
+	}
+	return makeBalInfoFromState(parts, currencies, state)
 }
 
 // RegisterAssetERC20 is a stub that always returns false. Because, the remote
