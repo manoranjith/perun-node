@@ -35,6 +35,8 @@ import (
 	"github.com/hyperledger-labs/perun-node"
 	"github.com/hyperledger-labs/perun-node/api/grpc/pb"
 	"github.com/hyperledger-labs/perun-node/app/payment"
+	"github.com/hyperledger-labs/perun-node/blockchain/ethereum"
+	"github.com/hyperledger-labs/perun-node/currency"
 )
 
 // payChAPIServer represents a grpc server that can serve payment channel API.
@@ -64,6 +66,11 @@ type payChAPIServer struct {
 	subscribes map[string]map[pchannel.ID]pchannel.AdjudicatorSubscription
 
 	// chWatcher map[string]map[string]chan bool
+
+	APIServerEnabled bool
+
+	currRegistry perun.CurrencyRegistry
+	partsMap     map[string]string
 }
 
 // ListenAndServePayChAPI starts a payment channel API server that listens for incoming grpc
@@ -74,7 +81,21 @@ func ListenAndServePayChAPI(n perun.NodeAPI, grpcPort string) error {
 		chProposalsNotif: make(map[string]chan bool),
 		chUpdatesNotif:   make(map[string]map[string]chan bool),
 		subscribes:       make(map[string]map[pchannel.ID]pchannel.AdjudicatorSubscription),
+		currRegistry:     currency.NewRegistry(),
+		partsMap:         make(map[string]string),
 	}
+
+	walletBackend := ethereum.NewWalletBackend()
+	carAddr, err := walletBackend.ParseAddr("0x7b7E212652b9C3755C4E1f1718a142dDE3817523")
+	if err != nil {
+		return errors.WithMessage(err, "parsing car address")
+	}
+	chargerAddr, err := walletBackend.ParseAddr("0xa617fa2cc5eC8d72d4A60b9F424677e74E6bef68")
+	if err != nil {
+		return errors.WithMessage(err, "parsing charger ETH address")
+	}
+	apiServer.partsMap[carAddr.String()] = "car"
+	apiServer.partsMap[chargerAddr.String()] = "charger"
 
 	listener, err := net.Listen("tcp", grpcPort)
 	if err != nil {
@@ -82,6 +103,8 @@ func ListenAndServePayChAPI(n perun.NodeAPI, grpcPort string) error {
 	}
 	grpcServer := grpclib.NewServer()
 	pb.RegisterPayment_APIServer(grpcServer, apiServer)
+
+	apiServer.currRegistry.Register(currency.ETHSymbol, currency.ETHMaxDecimals)
 
 	return grpcServer.Serve(listener)
 }
@@ -692,6 +715,9 @@ func (a *payChAPIServer) ClosePayCh(ctx context.Context, req *pb.ClosePayChReq) 
 
 // Fund wraps session.Fund.
 func (a *payChAPIServer) Fund(ctx context.Context, req *pb.FundReq) (*pb.FundResp, error) {
+	D = InitDashboard()
+	a.APIServerEnabled = true
+
 	errResponse := func(err perun.APIError) *pb.FundResp {
 		return &pb.FundResp{
 			Error: toGrpcError(err),
@@ -705,6 +731,18 @@ func (a *payChAPIServer) Fund(ctx context.Context, req *pb.FundReq) (*pb.FundRes
 	req2, err2 := fromGrpcFundingReq(req)
 	if err2 != nil {
 		return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
+	}
+
+	currencies := []perun.Currency{a.currRegistry.Currency(currency.ETHSymbol)}
+	parts := make([]string, len(req2.Params.Parts))
+	for i := range req2.Params.Parts {
+		parts[i] = a.partsMap[req2.Params.Parts[i].String()]
+	}
+
+	balInfo := makeBalInfoFromState(parts, currencies, req2.State)
+
+	if a.APIServerEnabled {
+		D.FundingRequest(balInfo.Parts, balInfo.Bals[0])
 	}
 
 	err2 = sess.Fund(ctx, req2)
@@ -1653,4 +1691,27 @@ func toGrpcContractErrInfos(src []perun.ContractErrInfo) []*pb.ContractErrInfo {
 		output[i].Error = src[i].Error
 	}
 	return output
+}
+
+// makeBalInfoFromState retrieves balance information from the channel state.
+func makeBalInfoFromState(parts []string, currencies []perun.Currency, state *pchannel.State) perun.BalInfo {
+	return makeBalInfoFromRawBal(parts, currencies, state.Balances)
+}
+
+// makeBalInfoFromRawBal retrieves balance information from the raw balance.
+func makeBalInfoFromRawBal(parts []string, currencies []perun.Currency, rawBal [][]*big.Int) perun.BalInfo {
+	balInfo := perun.BalInfo{
+		Currencies: make([]string, len(currencies)),
+		Parts:      parts,
+		Bals:       make([][]string, len(rawBal)),
+	}
+	for i := range rawBal {
+		balInfo.Currencies[i] = currencies[i].Symbol()
+		balInfo.Bals[i] = make([]string, len(rawBal[i]))
+		for j := range rawBal[i] {
+			balInfo.Bals[i][j] = currencies[i].Print(rawBal[i][j])
+		}
+	}
+
+	return balInfo
 }
