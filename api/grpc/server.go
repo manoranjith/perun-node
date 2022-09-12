@@ -39,6 +39,8 @@ import (
 	"github.com/hyperledger-labs/perun-node/currency"
 )
 
+var withdrawn = false
+
 // payChAPIServer represents a grpc server that can serve payment channel API.
 type payChAPIServer struct {
 	// Embeddeing this types is required by generated gRPC stubs.
@@ -75,7 +77,7 @@ type payChAPIServer struct {
 
 // ListenAndServePayChAPI starts a payment channel API server that listens for incoming grpc
 // requests at the specified address and serves those requests using the node API instance.
-func ListenAndServePayChAPI(n perun.NodeAPI, grpcPort string) error {
+func ListenAndServePayChAPI(n perun.NodeAPI, grpcPort string, apiServerOnly bool) error {
 	apiServer := &payChAPIServer{
 		n:                n,
 		chProposalsNotif: make(map[string]chan bool),
@@ -83,6 +85,11 @@ func ListenAndServePayChAPI(n perun.NodeAPI, grpcPort string) error {
 		subscribes:       make(map[string]map[pchannel.ID]pchannel.AdjudicatorSubscription),
 		currRegistry:     currency.NewRegistry(),
 		partsMap:         make(map[string]string),
+		APIServerEnabled: apiServerOnly,
+	}
+
+	if apiServerOnly {
+		D = InitDashboard()
 	}
 
 	walletBackend := ethereum.NewWalletBackend()
@@ -715,9 +722,6 @@ func (a *payChAPIServer) ClosePayCh(ctx context.Context, req *pb.ClosePayChReq) 
 
 // Fund wraps session.Fund.
 func (a *payChAPIServer) Fund(ctx context.Context, req *pb.FundReq) (*pb.FundResp, error) {
-	D = InitDashboard()
-	a.APIServerEnabled = true
-
 	errResponse := func(err perun.APIError) *pb.FundResp {
 		return &pb.FundResp{
 			Error: toGrpcError(err),
@@ -743,6 +747,11 @@ func (a *payChAPIServer) Fund(ctx context.Context, req *pb.FundReq) (*pb.FundRes
 		return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
 	}
 
+	if a.APIServerEnabled {
+		withdrawn = false
+		D.FundingSuccessful()
+		D.PrintBlank()
+	}
 	return &pb.FundResp{
 		Error: nil,
 	}, nil
@@ -850,6 +859,10 @@ func (a *payChAPIServer) Withdraw(ctx context.Context, req *pb.WithdrawReq) (*pb
 	if err2 != nil {
 		return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
 	}
+	if a.APIServerEnabled && !withdrawn {
+		balInfo := a.GetBalInfo(adjReq.Tx.State, adjReq.Params)
+		D.WithdrawRequest(balInfo.Parts, balInfo.Bals[0])
+	}
 	stateMap := channel.StateMap(make(map[pchannel.ID]*pchannel.State))
 
 	for i := range req.StateMap {
@@ -866,6 +879,11 @@ func (a *payChAPIServer) Withdraw(ctx context.Context, req *pb.WithdrawReq) (*pb
 		return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
 	}
 
+	if a.APIServerEnabled && !withdrawn {
+		D.WithdrawSuccessful()
+		D.PrintBlank()
+		withdrawn = true
+	}
 	return &pb.WithdrawResp{
 		Error: nil,
 	}, nil
@@ -994,9 +1012,19 @@ func (a *payChAPIServer) StartWatchingLedgerChannel(srv pb.Payment_API_StartWatc
 	if err != nil {
 		return errors.WithMessage(err, "parsing signed state")
 	}
+
+	if a.APIServerEnabled {
+		// balInfo := a.GetBalInfo(signedState.State, signedState.Params)
+		D.WatchingRequest()
+		// D.WatchingRequest(balInfo.Parts, balInfo.Bals[0])
+	}
+
 	statesPub, adjSub, err := sess.StartWatchingLedgerChannel(context.TODO(), *signedState)
 	if err != nil {
 		return errors.WithMessage(err, "start watching")
+	}
+	if a.APIServerEnabled {
+		D.WatchingSuccessful()
 	}
 
 	// This stream is anyways closed when StopWatching is called for.
@@ -1008,6 +1036,17 @@ func (a *payChAPIServer) StartWatchingLedgerChannel(srv pb.Payment_API_StartWatc
 			case adjEvent, isOpen := <-adjEventStream:
 				if !isOpen {
 					return
+				}
+				if a.APIServerEnabled {
+					switch e := adjEvent.(type) {
+					case *pchannel.RegisteredEvent:
+						balInfo := a.GetBalInfo(e.State, signedState.Params)
+						D.ChannelRegistered(balInfo.Parts, balInfo.Bals[0])
+					case *pchannel.ConcludedEvent:
+						D.PrintBlank()
+						D.ChannelConcluded()
+						D.PrintBlank()
+					}
 				}
 				protoResponse, err := toProtoResponse(adjEvent)
 				if err != nil {
@@ -1042,6 +1081,15 @@ StatesPubLoop:
 		if err != nil {
 			err = errors.WithMessage(err, "parsing published states pub data")
 			break StatesPubLoop
+		}
+
+		if a.APIServerEnabled {
+			balInfo := a.GetBalInfo(tx.State, signedState.Params)
+			if !tx.State.IsFinal {
+				D.ChannelUpdated(balInfo.Parts, balInfo.Bals[0])
+			} else {
+				D.ChannelFinalized(balInfo.Parts, balInfo.Bals[0])
+			}
 		}
 		err = statesPub.Publish(context.TODO(), *tx)
 		if err != nil {
