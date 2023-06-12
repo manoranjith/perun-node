@@ -91,7 +91,8 @@ func (a *payChAPIServer) Time(context.Context, *pb.TimeReq) (*pb.TimeResp, error
 
 // RegisterCurrency wraps node.RegisterCurrency.
 func (a *payChAPIServer) RegisterCurrency(ctx context.Context, req *pb.RegisterCurrencyReq) (
-	*pb.RegisterCurrencyResp, error) {
+	*pb.RegisterCurrencyResp, error,
+) {
 	errResponse := func(err perun.APIError) *pb.RegisterCurrencyResp {
 		return &pb.RegisterCurrencyResp{
 			Response: &pb.RegisterCurrencyResp_Error{
@@ -279,7 +280,8 @@ func (a *payChAPIServer) GetPayChsInfo(ctx context.Context, req *pb.GetPayChsInf
 
 // SubPayChProposals wraps payment.SubPayChProposals.
 func (a *payChAPIServer) SubPayChProposals(req *pb.SubPayChProposalsReq,
-	srv pb.Payment_API_SubPayChProposalsServer) error {
+	srv pb.Payment_API_SubPayChProposalsServer,
+) error {
 	sess, err := a.n.GetSession(req.SessionID)
 	if err != nil {
 		// TODO: (mano) Return a error response and not a protocol error
@@ -317,7 +319,8 @@ func (a *payChAPIServer) SubPayChProposals(req *pb.SubPayChProposalsReq,
 
 // UnsubPayChProposals wraps payment.UnsubPayChProposals.
 func (a *payChAPIServer) UnsubPayChProposals(ctx context.Context, req *pb.UnsubPayChProposalsReq) (
-	*pb.UnsubPayChProposalsResp, error) {
+	*pb.UnsubPayChProposalsResp, error,
+) {
 	errResponse := func(err perun.APIError) *pb.UnsubPayChProposalsResp {
 		return &pb.UnsubPayChProposalsResp{
 			Response: &pb.UnsubPayChProposalsResp_Error{
@@ -356,7 +359,8 @@ func (a *payChAPIServer) closeGrpcPayChProposalSub(sessionID string) {
 
 // RespondPayChProposal wraps payment.RespondPayChProposal.
 func (a *payChAPIServer) RespondPayChProposal(ctx context.Context, req *pb.RespondPayChProposalReq) (
-	*pb.RespondPayChProposalResp, error) {
+	*pb.RespondPayChProposalResp, error,
+) {
 	errResponse := func(err perun.APIError) *pb.RespondPayChProposalResp {
 		return &pb.RespondPayChProposalResp{
 			Response: &pb.RespondPayChProposalResp_Error{
@@ -413,7 +417,8 @@ func (a *payChAPIServer) CloseSession(ctx context.Context, req *pb.CloseSessionR
 
 // DeployAssetERC20 wraps session.DeployAssetERC20.
 func (a *payChAPIServer) DeployAssetERC20(ctx context.Context, req *pb.DeployAssetERC20Req) (
-	*pb.DeployAssetERC20Resp, error) {
+	*pb.DeployAssetERC20Resp, error,
+) {
 	errResponse := func(err perun.APIError) *pb.DeployAssetERC20Resp {
 		return &pb.DeployAssetERC20Resp{
 			Response: &pb.DeployAssetERC20Resp_Error{
@@ -442,7 +447,8 @@ func (a *payChAPIServer) DeployAssetERC20(ctx context.Context, req *pb.DeployAss
 
 // SendPayChUpdate wraps payment.SendPayChUpdate.
 func (a *payChAPIServer) SendPayChUpdate(ctx context.Context, req *pb.SendPayChUpdateReq) (
-	*pb.SendPayChUpdateResp, error) {
+	*pb.SendPayChUpdateResp, error,
+) {
 	errResponse := func(err perun.APIError) *pb.SendPayChUpdateResp {
 		return &pb.SendPayChUpdateResp{
 			Response: &pb.SendPayChUpdateResp_Error{
@@ -535,7 +541,8 @@ var ToGrpcChUpdateType = map[perun.ChUpdateType]pb.SubPayChUpdatesResp_Notify_Ch
 
 // UnsubPayChUpdates wraps payment.UnsubPayChUpdates.
 func (a *payChAPIServer) UnsubPayChUpdates(ctx context.Context, req *pb.UnsubPayChUpdatesReq) (
-	*pb.UnsubPayChUpdatesResp, error) {
+	*pb.UnsubPayChUpdatesResp, error,
+) {
 	errResponse := func(err perun.APIError) *pb.UnsubPayChUpdatesResp {
 		return &pb.UnsubPayChUpdatesResp{
 			Response: &pb.UnsubPayChUpdatesResp_Error{
@@ -576,7 +583,8 @@ func (a *payChAPIServer) closeGrpcPayChUpdateSub(sessionID, chID string) {
 
 // RespondPayChUpdate wraps payment.RespondPayChUpdate.
 func (a *payChAPIServer) RespondPayChUpdate(ctx context.Context, req *pb.RespondPayChUpdateReq) (
-	*pb.RespondPayChUpdateResp, error) {
+	*pb.RespondPayChUpdateResp, error,
+) {
 	errResponse := func(err perun.APIError) *pb.RespondPayChUpdateResp {
 		return &pb.RespondPayChUpdateResp{
 			Response: &pb.RespondPayChUpdateResp_Error{
@@ -609,7 +617,8 @@ func (a *payChAPIServer) RespondPayChUpdate(ctx context.Context, req *pb.Respond
 
 // GetPayChInfo wraps payment.GetBalInfo.
 func (a *payChAPIServer) GetPayChInfo(ctx context.Context, req *pb.GetPayChInfoReq) (
-	*pb.GetPayChInfoResp, error) {
+	*pb.GetPayChInfoResp, error,
+) {
 	errResponse := func(err perun.APIError) *pb.GetPayChInfoResp {
 		return &pb.GetPayChInfoResp{
 			Response: &pb.GetPayChInfoResp_Error{
