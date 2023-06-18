@@ -21,7 +21,6 @@ package session_test
 
 import (
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"testing"
@@ -261,7 +260,7 @@ func Test_Integ_Persistence(t *testing.T) {
 	t.Run("err_database_init", func(t *testing.T) {
 		prng := rand.New(rand.NewSource(ethereumtest.RandSeedForTestAccs))
 		cfg := sessiontest.NewConfigT(t, prng) // Get a session config with no peerIDs in the ID provider.
-		tempFile, err := ioutil.TempFile("", "")
+		tempFile, err := os.CreateTemp("", "")
 		require.NoError(t, err)
 		tempFile.Close() // nolint:errcheck
 		cfg.DatabaseDir = tempFile.Name()
@@ -286,7 +285,7 @@ Bob:
     comm_address: 127.0.0.1:5750
     comm_type: tcpip`
 
-	tempFile, err := ioutil.TempFile("", "")
+	tempFile, err := os.CreateTemp("", "")
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		if err = os.Remove(tempFile.Name()); err != nil {
@@ -301,7 +300,7 @@ Bob:
 
 func copyDirToTmp(t *testing.T, src string) (tempDirName string) {
 	var err error
-	tempDirName, err = ioutil.TempDir("", "")
+	tempDirName, err = os.MkdirTemp("", "")
 	require.NoError(t, err)
 	require.NoError(t, copyutil.Copy(src, tempDirName))
 	t.Cleanup(func() {
@@ -313,7 +312,7 @@ func copyDirToTmp(t *testing.T, src string) (tempDirName string) {
 }
 
 func newDatabaseDir(t *testing.T) (dir string) {
-	databaseDir, err := ioutil.TempDir("", "")
+	databaseDir, err := os.MkdirTemp("", "")
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		if err := os.RemoveAll(databaseDir); err != nil {
