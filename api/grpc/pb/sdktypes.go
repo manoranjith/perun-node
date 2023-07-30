@@ -116,7 +116,6 @@ func ToAdjReq(protoReq *AdjudicatorReq) (req perun.AdjudicatorReq, err error) {
 	return req, nil
 }
 
-// ToTransaction converts protobuf's Transaction definition to perun's Transaction definition.
 func toTransaction(protoSignedState *Transaction) (transaction pchannel.Transaction, err error) {
 	transaction.State, err = ToState(protoSignedState.State)
 	if err != nil {
@@ -298,15 +297,15 @@ func SubscribeResponseFromAdjEvent(adjEvent pchannel.AdjudicatorEvent) (*Subscri
 	protoResponse := &SubscribeResp{}
 	switch e := adjEvent.(type) {
 	case *pchannel.RegisteredEvent:
-		registeredEvent, err := fromRegisteredEvent(e)
+		registeredEvent, err := FromRegisteredEvent(e)
 		protoResponse.Response = &SubscribeResp_RegisteredEvent{registeredEvent}
 		return protoResponse, err
 	case *pchannel.ProgressedEvent:
-		progressedEvent, err := fromProgressedEvent(e)
+		progressedEvent, err := FromProgressedEvent(e)
 		protoResponse.Response = &SubscribeResp_ProgressedEvent{progressedEvent}
 		return protoResponse, err
 	case *pchannel.ConcludedEvent:
-		concludedEvent, err := fromConcludedEvent(e)
+		concludedEvent, err := FromConcludedEvent(e)
 		protoResponse.Response = &SubscribeResp_ConcludedEvent{concludedEvent}
 		return protoResponse, err
 	default:
@@ -318,7 +317,7 @@ func SubscribeResponseFromAdjEvent(adjEvent pchannel.AdjudicatorEvent) (*Subscri
 	}
 }
 
-func fromRegisteredEvent(event *pchannel.RegisteredEvent) (grpcEvent *RegisteredEvent, err error) {
+func FromRegisteredEvent(event *pchannel.RegisteredEvent) (grpcEvent *RegisteredEvent, err error) {
 	grpcEvent = &RegisteredEvent{}
 	grpcEvent.AdjudicatorEventBase = fromAdjudicatorEventBase(&event.AdjudicatorEventBase)
 	grpcEvent.Sigs = make([][]byte, len(event.Sigs))
@@ -327,7 +326,7 @@ func fromRegisteredEvent(event *pchannel.RegisteredEvent) (grpcEvent *Registered
 	return grpcEvent, errors.WithMessage(err, "parsing state")
 }
 
-func fromProgressedEvent(event *pchannel.ProgressedEvent) (grpcEvent *ProgressedEvent, err error) {
+func FromProgressedEvent(event *pchannel.ProgressedEvent) (grpcEvent *ProgressedEvent, err error) {
 	grpcEvent = &ProgressedEvent{}
 	grpcEvent.AdjudicatorEventBase = fromAdjudicatorEventBase(&event.AdjudicatorEventBase)
 	grpcEvent.Idx = uint32(event.Idx)
@@ -335,7 +334,7 @@ func fromProgressedEvent(event *pchannel.ProgressedEvent) (grpcEvent *Progressed
 	return grpcEvent, errors.WithMessage(err, "parsing state")
 }
 
-func fromConcludedEvent(event *pchannel.ConcludedEvent) (grpcEvent *ConcludedEvent, err error) {
+func FromConcludedEvent(event *pchannel.ConcludedEvent) (grpcEvent *ConcludedEvent, err error) {
 	grpcEvent = &ConcludedEvent{}
 	grpcEvent.AdjudicatorEventBase = fromAdjudicatorEventBase(&event.AdjudicatorEventBase)
 	return grpcEvent, errors.WithMessage(err, "parsing adjudicator event base")
