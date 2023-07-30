@@ -186,6 +186,22 @@ func New( //nolint: funlen
 		if err != nil {
 			return nil, perun.NewAPIErrUnknownInternal(errors.WithMessage(err, "initializing watcher"))
 		}
+	case "grpc":
+		conn, err := grpclib.Dial(cfg.WatcherURL, grpclib.WithInsecure())
+		if err != nil {
+			err = errors.WithMessage(err, "connecting to watching api")
+			return nil, perun.NewAPIErrUnknownInternal(err)
+		}
+		watcherClient := pb.NewPayment_APIClient(conn)
+		_, err = getNodeTime(watcherClient) // Test the API.
+		if err != nil {
+			err = errors.WithMessage(err, "test access of watcher api")
+			return nil, perun.NewAPIErrUnknownInternal(err)
+		}
+		watcher = &grpcWatcher{
+			apiKey: cfg.WatcherAPIKey,
+			client: watcherClient,
+		}
 	}
 
 	chClient, apiErr := newChClient(funder, adjudicator, watcher, commBackend, cfg.User.CommAddr, user.OffChain)

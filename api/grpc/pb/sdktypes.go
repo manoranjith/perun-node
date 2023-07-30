@@ -37,11 +37,11 @@ func SubscribeResponseToAdjEvent(protoResponse *SubscribeResp,
 ) (adjEvent pchannel.AdjudicatorEvent, err error) {
 	switch e := protoResponse.Response.(type) {
 	case *SubscribeResp_RegisteredEvent:
-		adjEvent, err = toRegisteredEvent(e.RegisteredEvent)
+		adjEvent, err = ToRegisteredEvent(e.RegisteredEvent)
 	case *SubscribeResp_ProgressedEvent:
-		adjEvent, err = toProgressedEvent(e.ProgressedEvent)
+		adjEvent, err = ToProgressedEvent(e.ProgressedEvent)
 	case *SubscribeResp_ConcludedEvent:
-		adjEvent, err = toConcludedEvent(e.ConcludedEvent)
+		adjEvent, err = ToConcludedEvent(e.ConcludedEvent)
 	case *SubscribeResp_Error:
 		return nil, err
 	default:
@@ -50,7 +50,7 @@ func SubscribeResponseToAdjEvent(protoResponse *SubscribeResp,
 	return adjEvent, nil
 }
 
-func toRegisteredEvent(protoEvent *RegisteredEvent) (event *pchannel.RegisteredEvent, err error) {
+func ToRegisteredEvent(protoEvent *RegisteredEvent) (event *pchannel.RegisteredEvent, err error) {
 	event = &pchannel.RegisteredEvent{}
 	event.AdjudicatorEventBase = toAdjudicatorEventBase(protoEvent.AdjudicatorEventBase)
 	event.State, err = ToState(protoEvent.State)
@@ -64,7 +64,7 @@ func toRegisteredEvent(protoEvent *RegisteredEvent) (event *pchannel.RegisteredE
 	return event, nil
 }
 
-func toProgressedEvent(protoEvent *ProgressedEvent) (event *pchannel.ProgressedEvent, err error) {
+func ToProgressedEvent(protoEvent *ProgressedEvent) (event *pchannel.ProgressedEvent, err error) {
 	event = &pchannel.ProgressedEvent{}
 	event.AdjudicatorEventBase = toAdjudicatorEventBase(protoEvent.AdjudicatorEventBase)
 	event.State, err = ToState(protoEvent.State)
@@ -75,7 +75,7 @@ func toProgressedEvent(protoEvent *ProgressedEvent) (event *pchannel.ProgressedE
 	return event, nil
 }
 
-func toConcludedEvent(protoEvent *ConcludedEvent) (event *pchannel.ConcludedEvent, err error) {
+func ToConcludedEvent(protoEvent *ConcludedEvent) (event *pchannel.ConcludedEvent, err error) {
 	event = &pchannel.ConcludedEvent{}
 	event.AdjudicatorEventBase = toAdjudicatorEventBase(protoEvent.AdjudicatorEventBase)
 	return event, nil
