@@ -69,7 +69,7 @@ func (a *fundingServer) Fund(ctx context.Context, grpcReq *pb.FundReq) (*pb.Fund
 // funder does not support use of assets other than the default ERC20 asset.
 //
 // TODO: Make actual implementation.
-func (a *payChAPIServer) RegisterAssetERC20(_ context.Context, _ *pb.RegisterAssetERC20Req) (
+func (a *fundingServer) RegisterAssetERC20(_ context.Context, _ *pb.RegisterAssetERC20Req) (
 	*pb.RegisterAssetERC20Resp, error,
 ) {
 	return &pb.RegisterAssetERC20Resp{
@@ -78,7 +78,7 @@ func (a *payChAPIServer) RegisterAssetERC20(_ context.Context, _ *pb.RegisterAss
 }
 
 // IsAssetRegistered wraps session.IsAssetRegistered.
-func (a *payChAPIServer) IsAssetRegistered(_ context.Context, req *pb.IsAssetRegisteredReq) (
+func (a *fundingServer) IsAssetRegistered(_ context.Context, req *pb.IsAssetRegisteredReq) (
 	*pb.IsAssetRegisteredResp,
 	error,
 ) {
