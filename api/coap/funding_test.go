@@ -3,7 +3,6 @@ package peruncoap
 import (
 	"context"
 	"log"
-	"os"
 	"testing"
 	"time"
 
@@ -12,20 +11,28 @@ import (
 
 func TestServerResponse(t *testing.T) {
 	go Serve()
+
 	co, err := udp.Dial("localhost:5688")
 	if err != nil {
 		log.Fatalf("Error dialing: %v", err)
 	}
+
 	path := "/a"
-	if len(os.Args) > 1 {
-		path = os.Args[1]
-	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
+
 	resp, err := co.Get(ctx, path)
 	if err != nil {
 		log.Fatalf("Error sending request: %v", err)
 	}
 	log.Printf("Response payload: %v", resp.String())
+	body, err := resp.ReadBody()
+	if err != nil {
+		log.Printf("Response payload error : %v", err)
+	}
+	log.Printf("Response payload body: %s", body)
+	log.Printf("Response payload code: %s", resp.Code().String())
+	log.Printf("Response payload token: %s", resp.Token())
+	log.Printf("Response payload type: %s", resp.Type().String())
 }

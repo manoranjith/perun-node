@@ -13,12 +13,13 @@ import (
 
 func loggingMiddleware(next mux.Handler) mux.Handler {
 	return mux.HandlerFunc(func(w mux.ResponseWriter, r *mux.Message) {
-		log.Printf("ClientAddress %v, %v\n", w.Conn().RemoteAddr(), r.String())
+		log.Printf("ClientAddress %v, %v\n\n", w.Conn().RemoteAddr(), r.String())
 		next.ServeCOAP(w, r)
 	})
 }
 
 func handleA(w mux.ResponseWriter, r *mux.Message) {
+	fmt.Println("AAA")
 	err := w.SetResponse(codes.Content, message.TextPlain, bytes.NewReader([]byte("hello world")))
 	if err != nil {
 		log.Printf("cannot set response: %v", err)
@@ -26,6 +27,7 @@ func handleA(w mux.ResponseWriter, r *mux.Message) {
 }
 
 func handleB(w mux.ResponseWriter, r *mux.Message) {
+	fmt.Println("BBB")
 	customResp := w.Conn().AcquireMessage(r.Context())
 	defer w.Conn().ReleaseMessage(customResp)
 	customResp.SetCode(codes.Content)
