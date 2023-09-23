@@ -20,7 +20,7 @@ import (
 )
 
 func TestServerResponse(t *testing.T) {
-	go Serve()
+	go ServeFundingWatchingAPI(nil, "5688")
 
 	co, err := udp.Dial("localhost:5688")
 	if err != nil {

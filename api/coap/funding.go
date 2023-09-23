@@ -2,16 +2,21 @@ package peruncoap
 
 import (
 	"bytes"
-	"fmt"
+	"context"
 	"log"
 
 	"github.com/hyperledger-labs/perun-node/api/grpc/pb"
-	coap "github.com/plgd-dev/go-coap/v3"
+	"github.com/hyperledger-labs/perun-node/api/handlers"
 	"github.com/plgd-dev/go-coap/v3/message"
 	"github.com/plgd-dev/go-coap/v3/message/codes"
 	"github.com/plgd-dev/go-coap/v3/mux"
 	"google.golang.org/protobuf/proto"
 )
+
+// fundingServer represents a grpc server that can serve funding API.
+type fundingServer struct {
+	*handlers.FundingHandler
+}
 
 func loggingMiddleware(next mux.Handler) mux.Handler {
 	return mux.HandlerFunc(func(w mux.ResponseWriter, r *mux.Message) {
@@ -20,78 +25,118 @@ func loggingMiddleware(next mux.Handler) mux.Handler {
 	})
 }
 
-func handleA(w mux.ResponseWriter, r *mux.Message) {
-	requestCode := r.Code().String()
-	requestType := r.Type().String()
-	requestToken := r.Token().String()
-	requestMessageID := r.MessageID()
-
-	contentFormat, err := r.ContentFormat()
-	if err != nil {
-		// handler error
+func (f *fundingServer) Fund(w mux.ResponseWriter, r *mux.Message) {
+	req := pb.FundReq{}
+	if !f.validateAndParseRequest(w, r, &req) {
+		return
 	}
+
+	resp, err := f.FundingHandler.Fund(context.TODO(), &req)
+	if err != nil {
+		f.sendErrorResponse(w, codes.InternalServerError, "Cannot parse the response")
+		return
+	}
+
+	f.sendResponse(w, codes.Content, resp)
+}
+
+func (f *fundingServer) Register(w mux.ResponseWriter, r *mux.Message) {
+	req := pb.RegisterReq{}
+	if !f.validateAndParseRequest(w, r, &req) {
+		return
+	}
+
+	resp, err := f.FundingHandler.Register(context.TODO(), &req)
+	if err != nil {
+		f.sendErrorResponse(w, codes.InternalServerError, "Cannot parse the response")
+		return
+	}
+
+	f.sendResponse(w, codes.Content, resp)
+}
+
+func (f *fundingServer) Withdraw(w mux.ResponseWriter, r *mux.Message) {
+	req := pb.WithdrawReq{}
+	if !f.validateAndParseRequest(w, r, &req) {
+		return
+	}
+
+	resp, err := f.FundingHandler.Withdraw(context.TODO(), &req)
+	if err != nil {
+		f.sendErrorResponse(w, codes.InternalServerError, "Cannot parse the response")
+		return
+	}
+
+	f.sendResponse(w, codes.Content, resp)
+}
+
+func (f *fundingServer) Progress(w mux.ResponseWriter, r *mux.Message) {
+	req := pb.ProgressReq{}
+	if !f.validateAndParseRequest(w, r, &req) {
+		return
+	}
+
+	resp, err := f.FundingHandler.Progress(context.TODO(), &req)
+	if err != nil {
+		f.sendErrorResponse(w, codes.InternalServerError, "Cannot parse the response")
+		return
+	}
+
+	f.sendResponse(w, codes.Content, resp)
+}
+
+func (f *fundingServer) validateAndParseRequest(w mux.ResponseWriter, r *mux.Message, req proto.Message) bool {
+	if r.Code() != codes.POST {
+		f.sendErrorResponse(w, codes.BadOption, "Only POST method is supported")
+		return false
+	}
+
+	if r.Type() != message.Confirmable {
+		f.sendErrorResponse(w, codes.BadOption, "Only Confirmable message type is supported")
+		return false
+	}
+
+	cf, _ := r.ContentFormat()
+	if cf != message.AppOctets {
+		f.sendErrorResponse(w, codes.UnsupportedMediaType, "Only Octet stream media type is supported")
+		return false
+	}
+
+	err := f.parseRequest(r, req)
+	if err != nil {
+		f.sendErrorResponse(w, codes.BadOption, "Cannot parse message body")
+		return false
+	}
+
+	return true
+}
+
+func (f *fundingServer) parseRequest(r *mux.Message, req proto.Message) error {
 	payload, err := r.ReadBody()
 	if err != nil {
-		// handler error
+		return err
 	}
-	protoFundingReq := pb.FundReq{}
-	err = proto.Unmarshal(payload, &protoFundingReq)
-	if err != nil {
-		// handler error
-	}
-	fmt.Println(
-		"g",
-		protoFundingReq.SessionID,
-		protoFundingReq.Params.Id,
-		protoFundingReq.Params.ChallengeDuration,
-		protoFundingReq.Params.Parts,
-		protoFundingReq.Params.App,
-		protoFundingReq.Params.Nonce,
-		protoFundingReq.Params.LedgerChannel,
-		protoFundingReq.Params.VirtualChannel,
-		protoFundingReq.State.Id,
-		protoFundingReq.State.Version,
-		protoFundingReq.State.App,
-		protoFundingReq.State.Allocation,
-		protoFundingReq.State.Data,
-		protoFundingReq.State.IsFinal,
-	)
-	fundingReq, err := pb.ToFundingReq(&protoFundingReq)
-	if err != nil {
-		// handler error
-	}
-	fmt.Println(
-		requestCode,
-		requestType,
-		requestToken,
-		requestMessageID,
-		contentFormat.String(),
-		fundingReq)
-	err = w.SetResponse(codes.Content, message.TextPlain, bytes.NewReader([]byte("hello world")))
+
+	err = proto.Unmarshal(payload, req)
+	return err
+}
+
+func (f *fundingServer) sendErrorResponse(w mux.ResponseWriter, code codes.Code, info string) {
+	err := w.SetResponse(code, message.TextPlain, bytes.NewReader([]byte(info)))
 	if err != nil {
 		log.Printf("cannot set response: %v", err)
 	}
 }
 
-func handleB(w mux.ResponseWriter, r *mux.Message) {
-	fmt.Println("BBB")
-	customResp := w.Conn().AcquireMessage(r.Context())
-	defer w.Conn().ReleaseMessage(customResp)
-	customResp.SetCode(codes.Content)
-	customResp.SetToken(r.Token())
-	customResp.SetContentFormat(message.TextPlain)
-	customResp.SetBody(bytes.NewReader([]byte("B hello world")))
-	err := w.Conn().WriteMessage(customResp)
+func (f *fundingServer) sendResponse(w mux.ResponseWriter, code codes.Code, resp proto.Message) {
+	payload, err := proto.Marshal(resp)
+	if err != nil {
+		f.sendErrorResponse(w, codes.InternalServerError, "Cannot parse the response")
+		return
+	}
+
+	err = w.SetResponse(code, message.AppOctets, bytes.NewReader(payload))
 	if err != nil {
 		log.Printf("cannot set response: %v", err)
 	}
-}
-
-func Serve() {
-	r := mux.NewRouter()
-	r.Use(loggingMiddleware)
-	r.Handle("/a", mux.HandlerFunc(handleA))
-	r.Handle("/b", mux.HandlerFunc(handleB))
-
-	log.Fatal(coap.ListenAndServe("udp", ":5688", r))
 }
