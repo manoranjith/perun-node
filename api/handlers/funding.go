@@ -25,6 +25,7 @@ import (
 
 	"github.com/hyperledger-labs/perun-node"
 	"github.com/hyperledger-labs/perun-node/api/grpc/pb"
+	"github.com/pkg/errors"
 )
 
 // FundingHandler represents a grpc server that can serve funding API.
@@ -211,6 +212,88 @@ func (a *FundingHandler) Progress(ctx context.Context, req *pb.ProgressReq) (*pb
 	}
 
 	return &pb.ProgressResp{
+		Error: nil,
+	}, nil
+}
+
+func (a *FundingHandler) Subscribe(req *pb.SubscribeReq, notify func(notif *pb.SubscribeResp) error) error {
+	sess, err := a.N.GetSession(req.SessionID)
+	if err != nil {
+		return errors.WithMessage(err, "retrieving session")
+	}
+
+	var chID pchannel.ID
+	copy(chID[:], req.ChID)
+
+	adjSub, err := sess.Subscribe(context.Background(), chID)
+	if err != nil {
+		return errors.WithMessage(err, "setting up subscription")
+	}
+
+	a.Lock()
+	if a.Subscribes[req.SessionID] == nil {
+		a.Subscribes[req.SessionID] = make(map[pchannel.ID]pchannel.AdjudicatorSubscription)
+	}
+	a.Subscribes[req.SessionID][chID] = adjSub
+	a.Unlock()
+
+	// This stream is anyways closed when StopWatching is called for.
+	// Hence, that will act as the exit condition for the loop.
+	go func() {
+		// will return nil, when the sub is closed.
+		// so, we need a mechanism to call close on the server side.
+		// so, add a call Unsubscribe, which simply calls close.
+		for {
+			adjEvent := adjSub.Next()
+			if adjEvent == nil {
+				err := errors.WithMessage(adjSub.Err(), "sub closed with error")
+				notif := &pb.SubscribeResp_Error{
+					Error: pb.FromError(perun.NewAPIErrUnknownInternal(err)),
+				}
+				// TODO: Proper error handling. For now, ignore this error.
+				_ = notify(&pb.SubscribeResp{Response: notif}) //nolint: errcheck
+				return
+			}
+			notif, err := pb.SubscribeResponseFromAdjEvent(adjEvent)
+			if err != nil {
+				return
+			}
+			err = notify(notif)
+			if err != nil {
+				return
+			}
+		}
+	}()
+
+	return nil
+}
+
+func (a *FundingHandler) Unsubscribe(_ context.Context, req *pb.UnsubscribeReq) (*pb.UnsubscribeResp, error) {
+	errResponse := func(err perun.APIError) *pb.UnsubscribeResp {
+		return &pb.UnsubscribeResp{
+			Error: pb.FromError(err),
+		}
+	}
+
+	var chID pchannel.ID
+	copy(chID[:], req.ChID)
+
+	a.Lock()
+	if _, ok := a.Subscribes[req.SessionID]; !ok {
+		return errResponse(perun.NewAPIErrUnknownInternal(errors.New("unknown session id"))), nil
+	}
+	adjSub, ok := a.Subscribes[req.SessionID][chID]
+	if !ok {
+		return errResponse(perun.NewAPIErrUnknownInternal(errors.New("unknown channel id"))), nil
+	}
+	delete(a.Subscribes[req.SessionID], chID)
+	a.Unlock()
+
+	if err := adjSub.Close(); err != nil {
+		return errResponse(perun.NewAPIErrUnknownInternal(errors.WithMessage(err, "closing sub"))), nil
+	}
+
+	return &pb.UnsubscribeResp{
 		Error: nil,
 	}, nil
 }
