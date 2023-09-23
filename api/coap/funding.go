@@ -40,6 +40,34 @@ func (f *fundingServer) Fund(w mux.ResponseWriter, r *mux.Message) {
 	f.sendResponse(w, codes.Content, resp)
 }
 
+func (f *fundingServer) RegisterAssetERC20(w mux.ResponseWriter, r *mux.Message) {
+	req := pb.RegisterAssetERC20Req{}
+	if !f.validateAndParseRequest(w, r, &req) {
+		return
+	}
+
+	resp, err := f.FundingHandler.RegisterAssetERC20(context.TODO(), &req)
+	if err != nil {
+		f.sendErrorResponse(w, codes.InternalServerError, "Cannot parse the response")
+		return
+	}
+
+	f.sendResponse(w, codes.Content, resp)
+}
+func (f *fundingServer) IsAssetRegistered(w mux.ResponseWriter, r *mux.Message) {
+	req := pb.IsAssetRegisteredReq{}
+	if !f.validateAndParseRequest(w, r, &req) {
+		return
+	}
+
+	resp, err := f.FundingHandler.IsAssetRegistered(context.TODO(), &req)
+	if err != nil {
+		f.sendErrorResponse(w, codes.InternalServerError, "Cannot parse the response")
+		return
+	}
+
+	f.sendResponse(w, codes.Content, resp)
+}
 func (f *fundingServer) Register(w mux.ResponseWriter, r *mux.Message) {
 	req := pb.RegisterReq{}
 	if !f.validateAndParseRequest(w, r, &req) {
