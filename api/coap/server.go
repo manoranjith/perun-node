@@ -42,5 +42,5 @@ func ServeFundingWatchingAPI(n perun.NodeAPI, port string) error {
 	r.Handle("/progress", mux.HandlerFunc(fundingServer.Progress))
 	r.Handle("/withdraw", mux.HandlerFunc(fundingServer.Withdraw))
 
-	return coap.ListenAndServe("udp", ":"+port, r)
+	return coap.ListenAndServe("tcp", ":"+port, r)
 }

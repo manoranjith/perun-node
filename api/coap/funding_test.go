@@ -10,7 +10,7 @@ import (
 
 	"github.com/hyperledger-labs/perun-node/api/grpc/pb"
 	"github.com/plgd-dev/go-coap/v3/message"
-	"github.com/plgd-dev/go-coap/v3/udp"
+	"github.com/plgd-dev/go-coap/v3/tcp"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 	ethchanneltest "perun.network/go-perun/backend/ethereum/channel/test"
@@ -22,13 +22,13 @@ import (
 func TestServerResponse(t *testing.T) {
 	go ServeFundingWatchingAPI(nil, "5688")
 
-	co, err := udp.Dial("localhost:5688")
+	time.Sleep(1 * time.Second)
+	co, err := tcp.Dial("localhost:5688")
 	if err != nil {
 		log.Fatalf("Error dialing: %v", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
+	ctx := context.Background()
 
 	path := "/a"
 	contentFormat := message.AppOctets
