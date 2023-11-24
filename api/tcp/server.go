@@ -17,11 +17,13 @@
 package peruntcp
 
 import (
+	"context"
 	"encoding/binary"
 	"fmt"
 	"io"
 	"net"
 
+	"google.golang.org/protobuf/proto"
 	pchannel "perun.network/go-perun/channel"
 	"perun.network/go-perun/log"
 	"polycry.pt/poly-go/sync"
@@ -36,27 +38,25 @@ type Server struct {
 
 	server net.Listener
 
-	fundingServer *fundingServer
+	fundingHandler *handlers.FundingHandler
 }
 
 // ServeFundingWatchingAPI starts a payment channel API server that listens for incoming grpc
 // requests at the specified address and serves those requests using the node API instance.
 func ServeFundingWatchingAPI(n perun.NodeAPI, port string) error {
-	fundingServer := &fundingServer{
-		FundingHandler: &handlers.FundingHandler{
-			N:          n,
-			Subscribes: make(map[string]map[pchannel.ID]pchannel.AdjudicatorSubscription),
-		},
+	fundingServer := &handlers.FundingHandler{
+		N:          n,
+		Subscribes: make(map[string]map[pchannel.ID]pchannel.AdjudicatorSubscription),
 	}
 
-	tcpServer, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	tcpServer, err := net.Listen("tcp", port)
 	if err != nil {
 		return fmt.Errorf("listener: %w", err)
 	}
 
 	s := &Server{
-		server:        tcpServer,
-		fundingServer: fundingServer,
+		server:         tcpServer,
+		fundingHandler: fundingServer,
 	}
 	s.OnCloseAlways(func() { tcpServer.Close() })
 
@@ -74,7 +74,7 @@ func (s *Server) Handle(conn io.ReadWriteCloser) {
 	defer conn.Close()
 	s.OnCloseAlways(func() { conn.Close() })
 
-	// var m sync.Mutex
+	var m sync.Mutex
 
 	for {
 		msg, err := recvMsg(conn)
@@ -85,31 +85,18 @@ func (s *Server) Handle(conn io.ReadWriteCloser) {
 
 		go func() {
 			switch msg := msg.GetMsg().(type) {
-			case *pb.Message_FundingRequest:
+			case *pb.APIMessage_FundReq:
 				log.Warn("Server: Got Funding request")
-				req, err := ParseFundingRequestMsg(msg.FundingRequest)
-				if err != nil {
-					log.Errorf("Invalid update message: %v", err)
-					return
-				}
-				if err := s.funder.Fund(s.Ctx(), pchannel.FundingReq{
-					Params:    &req.Params,
-					State:     &req.InitialState,
-					Idx:       req.Participant,
-					Agreement: req.FundingAgreement,
-				}); err != nil {
-					log.Errorf("Funding failed: %v", err)
-				}
-				sendMsg(&m, conn, &pb.Message{Msg: &pb.Message_FundingResponse{
-					FundingResponse: &pb.FundingResponseMsg{
-						ChannelId: req.InitialState.ID[:],
-						Success:   err == nil}}})
+				// TODO: error is always nil. Remove that return argument.
+				fundResp, _ := s.fundingHandler.Fund(context.Background(), msg.FundReq)
+				sendMsg(&m, conn, &pb.APIMessage{Msg: &pb.APIMessage_FundResp{
+					FundResp: fundResp}})
 			}
 		}()
 	}
 }
 
-func recvMsg(conn io.Reader) (*pb.Fndi, error) {
+func recvMsg(conn io.Reader) (*pb.APIMessage, error) {
 	var size uint16
 	if err := binary.Read(conn, binary.BigEndian, &size); err != nil {
 		return nil, fmt.Errorf("reading size of data from wire: %w", err)
@@ -118,17 +105,17 @@ func recvMsg(conn io.Reader) (*pb.Fndi, error) {
 	if _, err := io.ReadFull(conn, data); err != nil {
 		return nil, fmt.Errorf("reading data from wire: %w", err)
 	}
-	var msg pb.Message
-	if err := protobuf.Unmarshal(data, &msg); err != nil {
+	var msg pb.APIMessage
+	if err := proto.Unmarshal(data, &msg); err != nil {
 		return nil, fmt.Errorf("unmarshalling message: %w", err)
 	}
 	return &msg, nil
 }
 
-func sendMsg(m *sync.Mutex, conn io.Writer, msg *pb.Message) error {
+func sendMsg(m *sync.Mutex, conn io.Writer, msg *pb.APIMessage) error {
 	m.Lock()
 	defer m.Unlock()
-	data, err := protobuf.Marshal(msg)
+	data, err := proto.Marshal(msg)
 	if err != nil {
 		return fmt.Errorf("marshalling message: %w", err)
 	}

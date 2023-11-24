@@ -13,11 +13,13 @@ type fundingServer struct {
 }
 
 func (f *fundingServer) Fund(req *pb.FundReq) {
-	resp, err := f.FundingHandler.Fund(context.TODO(), &req)
+	resp, err := f.FundingHandler.Fund(context.TODO(), req)
 	if err != nil {
 		// setErrorResponse(w, codes.InternalServerError, "Cannot parse the response")
 		return
 	}
+
+	_, _ = resp, err
 
 	// setResponse(w, codes.Content, resp)
 }
