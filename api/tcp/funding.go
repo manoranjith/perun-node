@@ -1,4 +1,4 @@
-package perunnet
+package peruntcp
 
 import (
 	"context"
