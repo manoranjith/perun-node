@@ -28,9 +28,9 @@ option go_package = ".;pb";
 // This type is defined as the enumeration of all messages in funding and
 // watching service, in order to be able to parse the messages in api/tcp
 // package.
-message API_Messages{
+message APIMessage{
     oneof msg {
-      FundReq funding_req = 1;
-      FundResp funding_resp = 2;
+      FundReq fund_req = 1;
+      FundResp fund_resp = 2;
     }
 }
