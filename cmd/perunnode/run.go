@@ -28,6 +28,7 @@ import (
 
 	"github.com/hyperledger-labs/perun-node"
 	"github.com/hyperledger-labs/perun-node/api/grpc"
+	peruntcp "github.com/hyperledger-labs/perun-node/api/tcp"
 	"github.com/hyperledger-labs/perun-node/node"
 )
 
@@ -100,7 +101,7 @@ func init() {
 func defineFlags() {
 	runCmd.Flags().String(configfileF, defaultConfigFile, "node config file")
 	runCmd.Flags().Uint64(grpcPortF, defaultGrpcPort, "port for grpc payment channel API server to listen")
-	runCmd.Flags().String(serviceF, defaultService, "service to be enabled (payment or fundwatch)")
+	runCmd.Flags().String(serviceF, defaultService, "service to be enabled (payment, fundwatch or fundwatchtcp)")
 
 	// Default values of all these flags should be zero, as their only purpose is to allow the user to
 	// explicitly specify the configuration.
@@ -159,6 +160,12 @@ func run(cmd *cobra.Command, _ []string) {
 		fmt.Printf("Running perun node with the below config:\n%s.\n\nServing funding and watching API via grpc at port %s\n\n",
 			prettify(nodeCfg), grpcAddr)
 		if err := grpc.ServeFundingWatchingAPI(nodeAPI, grpcAddr); err != nil {
+			fmt.Printf("Server returned with error: %v\n", err)
+		}
+	case "fundwatchtcp":
+		fmt.Printf("Running perun node with the below config:\n%s.\n\nServing funding and watching API via tcp at port %s\n\n",
+			prettify(nodeCfg), grpcAddr)
+		if err := peruntcp.ServeFundingWatchingAPI(nodeAPI, grpcAddr); err != nil {
 			fmt.Printf("Server returned with error: %v\n", err)
 		}
 	default:
