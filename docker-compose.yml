@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  perun-node:
+    build: .
+    volumes:
+      - .:/home/circleci/perun-node
+      - ./tmp/results:/tmp/results
+      - ./tmp/artifacts:/tmp/artifacts
+    ports:
+      - "8545:8545" # If you need to expose ganache-cli port
+
+    tty: true
+    stdin_open: true
