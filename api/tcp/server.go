@@ -96,10 +96,13 @@ func (s *Server) Handle(conn io.ReadWriteCloser) {
 		go func() {
 			switch msg := msg.GetMsg().(type) {
 			case *pb.APIMessage_FundReq:
-				log.Warn("Server: Got Funding request")
+				log.Warnf("Server: Got Funding request: %+v", msg)
 				// TODO: error is always nil. Remove that return argument.
-				fundResp, _ := s.fundingHandler.Fund(context.Background(), msg.FundReq)
 				msg.FundReq.SessionID = s.sessionID
+				fundResp, err := s.fundingHandler.Fund(context.Background(), msg.FundReq)
+				if err != nil {
+					log.Errorf("fund response error +%v", err)
+				}
 				sendMsg(&m, conn, &pb.APIMessage{Msg: &pb.APIMessage_FundResp{
 					FundResp: fundResp}})
 			}
