@@ -105,6 +105,29 @@ func (s *Server) Handle(conn io.ReadWriteCloser) {
 				}
 				sendMsg(&m, conn, &pb.APIMessage{Msg: &pb.APIMessage_FundResp{
 					FundResp: fundResp}})
+
+			case *pb.APIMessage_RegisterReq:
+				log.Warnf("Server: Got Registering request: %+v", msg)
+				// TODO: error is always nil. Remove that return argument.
+				msg.RegisterReq.SessionID = s.sessionID
+				registerResp, err := s.fundingHandler.Register(context.Background(), msg.RegisterReq)
+				if err != nil {
+					log.Errorf("register response error +%v", err)
+				}
+				sendMsg(&m, conn, &pb.APIMessage{Msg: &pb.APIMessage_RegisterResp{
+					RegisterResp: registerResp}})
+
+			case *pb.APIMessage_WithdrawReq:
+				log.Warnf("Server: Got Withdrawing request: %+v", msg)
+				// TODO: error is always nil. Remove that return argument.
+				msg.WithdrawReq.SessionID = s.sessionID
+				withdrawResp, err := s.fundingHandler.Withdraw(context.Background(), msg.WithdrawReq)
+				if err != nil {
+					log.Errorf("withdraw response error +%v", err)
+				}
+				sendMsg(&m, conn, &pb.APIMessage{Msg: &pb.APIMessage_WithdrawResp{
+					WithdrawResp: withdrawResp}})
+
 			}
 		}()
 	}
