@@ -122,14 +122,14 @@ func (a *grpcAdjudicator) Register(
 		err = errors.WithMessage(err, "parsing grpc adjudicator request")
 		return perun.NewAPIErrUnknownInternal(err)
 	}
-	protoReq.SignedStates = make([]*pb.SignedState, len(signedStates))
-	for i := range signedStates {
-		protoReq.SignedStates[i], err = pb.FromSignedState(&signedStates[i])
-		if err != nil {
-			err = errors.WithMessagef(err, "parsing %d'th signed state", i)
-			return perun.NewAPIErrUnknownInternal(err)
-		}
-	}
+	// protoReq.SignedStates = make([]*pb.SignedState, len(signedStates))
+	// for i := range signedStates {
+	// 	protoReq.SignedStates[i], err = pb.FromSignedState(&signedStates[i])
+	// 	if err != nil {
+	// 		err = errors.WithMessagef(err, "parsing %d'th signed state", i)
+	// 		return perun.NewAPIErrUnknownInternal(err)
+	// 	}
+	// }
 	protoReq.SessionID = a.apiKey
 
 	resp, err := a.client.Register(context.Background(), &protoReq)
@@ -156,11 +156,11 @@ func (a *grpcAdjudicator) Withdraw(
 		err = errors.WithMessage(err, "parsing grpc adjudicator request")
 		return perun.NewAPIErrUnknownInternal(err)
 	}
-	protoReq.StateMap, err = pb.FromStateMap(stateMap)
-	if err != nil {
-		err = errors.WithMessage(err, "parsing grpc adjudicator request")
-		return perun.NewAPIErrUnknownInternal(err)
-	}
+	// protoReq.StateMap, err = pb.FromStateMap(stateMap)
+	// if err != nil {
+	// 	err = errors.WithMessage(err, "parsing grpc adjudicator request")
+	// 	return perun.NewAPIErrUnknownInternal(err)
+	// }
 	protoReq.SessionID = a.apiKey
 
 	resp, err := a.client.Withdraw(context.Background(), &protoReq)

@@ -82,7 +82,7 @@ message FundResp {
 message RegisterReq {
     string sessionID = 1;
     AdjudicatorReq adjReq = 2;
-    repeated SignedState signedStates = 3;
+    /* repeated SignedState signedStates = 3; */
 }
 
 message RegisterResp {
@@ -92,7 +92,7 @@ message RegisterResp {
 message WithdrawReq {
     string sessionID = 1;
     AdjudicatorReq adjReq = 2;
-    repeated StateMap stateMap = 3;
+    /* repeated StateMap stateMap = 3; */
 }
 
 message WithdrawResp {
