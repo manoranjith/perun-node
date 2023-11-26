@@ -30,7 +30,7 @@ import (
 	pwatcher "perun.network/go-perun/watcher"
 	pwire "perun.network/go-perun/wire"
 	pnet "perun.network/go-perun/wire/net"
-	pperunioserializer "perun.network/go-perun/wire/perunio/serializer"
+	pperunioserializer "perun.network/go-perun/wire/protobuf"
 	pleveldb "polycry.pt/poly-go/sortedkv/leveldb"
 
 	"github.com/hyperledger-labs/perun-node"
