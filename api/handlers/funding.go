@@ -127,13 +127,14 @@ func (a *FundingHandler) Register(ctx context.Context, req *pb.RegisterReq) (*pb
 	if err2 != nil {
 		return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
 	}
-	signedStates := make([]pchannel.SignedState, len(req.SignedStates))
-	for i := range signedStates {
-		signedStates[i], err2 = pb.ToSignedState(req.SignedStates[i])
-		if err2 != nil {
-			return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
-		}
-	}
+	signedStates := make([]pchannel.SignedState, 0)
+	// signedStates := make([]pchannel.SignedState, len(req.SignedStates))
+	// for i := range signedStates {
+	// 	signedStates[i], err2 = pb.ToSignedState(req.SignedStates[i])
+	// 	if err2 != nil {
+	// 		return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
+	// 	}
+	// }
 
 	err2 = sess.Register(ctx, adjReq, signedStates)
 	if err2 != nil {
@@ -163,14 +164,14 @@ func (a *FundingHandler) Withdraw(ctx context.Context, req *pb.WithdrawReq) (*pb
 	}
 	stateMap := pchannel.StateMap(make(map[pchannel.ID]*pchannel.State))
 
-	for i := range req.StateMap {
-		var id pchannel.ID
-		copy(id[:], req.StateMap[i].Id)
-		stateMap[id], err2 = pb.ToState(req.StateMap[i].State)
-		if err2 != nil {
-			return errResponse(err), nil
-		}
-	}
+	// 	for i := range req.StateMap {
+	// 		var id pchannel.ID
+	// 		copy(id[:], req.StateMap[i].Id)
+	// 		stateMap[id], err2 = pb.ToState(req.StateMap[i].State)
+	// 		if err2 != nil {
+	// 			return errResponse(err), nil
+	// 		}
+	// }
 
 	err2 = sess.Withdraw(ctx, adjReq, stateMap)
 	if err2 != nil {
