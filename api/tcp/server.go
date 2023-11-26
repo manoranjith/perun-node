@@ -31,6 +31,7 @@ import (
 	"github.com/hyperledger-labs/perun-node"
 	"github.com/hyperledger-labs/perun-node/api/grpc/pb"
 	"github.com/hyperledger-labs/perun-node/api/handlers"
+	"github.com/hyperledger-labs/perun-node/app/payment"
 )
 
 type Server struct {
@@ -39,11 +40,19 @@ type Server struct {
 	server net.Listener
 
 	fundingHandler *handlers.FundingHandler
+
+	sessionID string // For timebeing use hard-coded session-id
 }
 
 // ServeFundingWatchingAPI starts a payment channel API server that listens for incoming grpc
 // requests at the specified address and serves those requests using the node API instance.
 func ServeFundingWatchingAPI(n perun.NodeAPI, port string) error {
+	var err error
+	sessionID, _, err := payment.OpenSession(n, "api/session.yaml")
+	if err != nil {
+		return err
+	}
+
 	fundingServer := &handlers.FundingHandler{
 		N:          n,
 		Subscribes: make(map[string]map[pchannel.ID]pchannel.AdjudicatorSubscription),
@@ -57,6 +66,7 @@ func ServeFundingWatchingAPI(n perun.NodeAPI, port string) error {
 	s := &Server{
 		server:         tcpServer,
 		fundingHandler: fundingServer,
+		sessionID:      sessionID,
 	}
 	s.OnCloseAlways(func() { tcpServer.Close() })
 
@@ -89,6 +99,7 @@ func (s *Server) Handle(conn io.ReadWriteCloser) {
 				log.Warn("Server: Got Funding request")
 				// TODO: error is always nil. Remove that return argument.
 				fundResp, _ := s.fundingHandler.Fund(context.Background(), msg.FundReq)
+				msg.FundReq.SessionID = s.sessionID
 				sendMsg(&m, conn, &pb.APIMessage{Msg: &pb.APIMessage_FundResp{
 					FundResp: fundResp}})
 			}
