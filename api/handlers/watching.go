@@ -43,6 +43,11 @@ func (a *WatchingHandler) StartWatchingLedgerChannel( //nolint: funlen, gocognit
 	sendAdjEvent func(resp *pb.StartWatchingLedgerChannelResp) error,
 	receiveState func() (req *pb.StartWatchingLedgerChannelReq, err error),
 ) error {
+	printf("\nReceived: Start watching channel 0x%x version %v (final=%v)",
+		req.State.Id,
+		req.State.Version,
+		req.State.IsFinal)
+
 	var err error
 	sess, err := a.N.GetSession(req.SessionID)
 	if err != nil {
@@ -88,8 +93,11 @@ func (a *WatchingHandler) StartWatchingLedgerChannel( //nolint: funlen, gocognit
 	var tx *pchannel.Transaction
 StatesPubLoop:
 	for {
-
 		req, err = receiveState()
+		printf("\nReceived: State for channel 0x%x version %v (final=%v)",
+			req.State.Id,
+			req.State.Version,
+			req.State.IsFinal)
 		if err != nil {
 			err = errors.WithMessage(err, "reading published states pub data")
 			break StatesPubLoop
@@ -120,6 +128,8 @@ func (a *WatchingHandler) StopWatching(ctx context.Context, req *pb.StopWatching
 		}
 	}
 
+	printf("\nReceived: Stop watching channel 0x%x", req.ChID)
+
 	sess, err := a.N.GetSession(req.SessionID)
 	if err != nil {
 		return errResponse(err), nil
@@ -128,8 +138,11 @@ func (a *WatchingHandler) StopWatching(ctx context.Context, req *pb.StopWatching
 	copy(chID[:], req.ChID)
 	err2 := sess.StopWatching(ctx, chID)
 	if err2 != nil {
+		printf("\nError stop watching for channel: %v", err2)
 		return errResponse(err), nil
 	}
+
+	printf("\nWatching stopped.")
 
 	return &pb.StopWatchingResp{Error: nil}, nil
 }

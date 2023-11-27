@@ -46,6 +46,8 @@ func (a *FundingHandler) Fund(ctx context.Context, req *pb.FundReq) (*pb.FundRes
 		}
 	}
 
+	printf("\nReceived: Fund for channel 0x%x", req.State.Id)
+
 	sess, apiErr := a.N.GetSession(req.SessionID)
 	if apiErr != nil {
 		return errResponse(apiErr), nil
@@ -57,8 +59,11 @@ func (a *FundingHandler) Fund(ctx context.Context, req *pb.FundReq) (*pb.FundRes
 
 	err = sess.Fund(ctx, fundingReq)
 	if err != nil {
+		printf("\nError funding the channel: %v", err)
 		return errResponse(perun.NewAPIErrUnknownInternal(err)), nil
 	}
+
+	printf("\nChannel funded.")
 
 	return &pb.FundResp{
 		Error: nil,
@@ -120,6 +125,11 @@ func (a *FundingHandler) Register(ctx context.Context, req *pb.RegisterReq) (*pb
 		}
 	}
 
+	printf("\nReceived: Register channel 0x%x version %v (final=%v)",
+		req.AdjReq.Tx.State.Id,
+		req.AdjReq.Tx.State.Version,
+		req.AdjReq.Tx.State.IsFinal)
+
 	sess, err := a.N.GetSession(req.SessionID)
 	if err != nil {
 		return errResponse(err), nil
@@ -138,8 +148,11 @@ func (a *FundingHandler) Register(ctx context.Context, req *pb.RegisterReq) (*pb
 
 	err2 = sess.Register(ctx, adjReq, signedStates)
 	if err2 != nil {
+		printf("\nError registering the channel: %v", err2)
 		return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
 	}
+
+	printf("\nChannel registered.")
 
 	return &pb.RegisterResp{
 		Error: nil,
@@ -153,6 +166,11 @@ func (a *FundingHandler) Withdraw(ctx context.Context, req *pb.WithdrawReq) (*pb
 			Error: pb.FromError(err),
 		}
 	}
+
+	printf("\nReceived: Withdraw channel 0x%x version %v (final=%v)",
+		req.AdjReq.Tx.State.Id,
+		req.AdjReq.Tx.State.Version,
+		req.AdjReq.Tx.State.IsFinal)
 
 	sess, err := a.N.GetSession(req.SessionID)
 	if err != nil {
@@ -175,8 +193,11 @@ func (a *FundingHandler) Withdraw(ctx context.Context, req *pb.WithdrawReq) (*pb
 
 	err2 = sess.Withdraw(ctx, adjReq, stateMap)
 	if err2 != nil {
+		printf("\nError withdrawing the channel: %v", err2)
 		return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
 	}
+
+	printf("\nChannel withdrawn.")
 
 	return &pb.WithdrawResp{
 		Error: nil,
@@ -190,6 +211,11 @@ func (a *FundingHandler) Progress(ctx context.Context, req *pb.ProgressReq) (*pb
 			Error: pb.FromError(err),
 		}
 	}
+
+	printf("\nReceived: Progress channel 0x%x version %v (final=%v)",
+		req.AdjReq.Tx.State.Id,
+		req.AdjReq.Tx.State.Version,
+		req.AdjReq.Tx.State.IsFinal)
 
 	sess, err := a.N.GetSession(req.SessionID)
 	if err != nil {
@@ -209,8 +235,11 @@ func (a *FundingHandler) Progress(ctx context.Context, req *pb.ProgressReq) (*pb
 
 	err2 = sess.Progress(ctx, progReq)
 	if err2 != nil {
+		printf("\nError progressing the channel: %v", err2)
 		return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
 	}
+
+	printf("\nChannel progressed.")
 
 	return &pb.ProgressResp{
 		Error: nil,
@@ -223,6 +252,9 @@ func (a *FundingHandler) Subscribe(req *pb.SubscribeReq, notify func(notif *pb.S
 	if err != nil {
 		return errors.WithMessage(err, "retrieving session")
 	}
+
+	printf("\nReceived: Subscribe for adjudciator events for channel 0x%x",
+		req.ChID)
 
 	var chID pchannel.ID
 	copy(chID[:], req.ChID)
@@ -277,6 +309,9 @@ func (a *FundingHandler) Unsubscribe(_ context.Context, req *pb.UnsubscribeReq) 
 			Error: pb.FromError(err),
 		}
 	}
+
+	printf("\nReceived: Unsubscribe for adjudciator events for channel 0x%x",
+		req.ChID)
 
 	var chID pchannel.ID
 	copy(chID[:], req.ChID)
