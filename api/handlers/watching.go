@@ -97,14 +97,11 @@ func (a *WatchingHandler) StartWatchingLedgerChannel( //nolint: funlen, gocognit
 	var tx *pchannel.Transaction
 StatesPubLoop:
 	for {
-		fmt.Printf("\nStates pub started")
-		defer fmt.Printf("\nStates pub ended")
-
 		req, err = receiveState()
-		fmt.Printf("\nReceived: State version %v (final=%v) for channel 0x%x",
+		fmt.Printf("\nReceived: State for channel 0x%x version %v (final=%v)",
+			req.State.Id,
 			req.State.Version,
-			req.State.IsFinal,
-			req.State.Id)
+			req.State.IsFinal)
 		if err != nil {
 			err = errors.WithMessage(err, "reading published states pub data")
 			break StatesPubLoop

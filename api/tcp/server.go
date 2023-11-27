@@ -145,21 +145,19 @@ func (s *Server) Handle(conn io.ReadWriteCloser) {
 			case *pb.APIMessage_StartWatchingLedgerChannelReq:
 				msg.StartWatchingLedgerChannelReq.SessionID = s.sessionID
 				log.Warnf("Server: Got Watching request")
-				s.channelsMtx.Lock()
-				defer s.channelsMtx.Unlock()
 
+				s.channelsMtx.Lock()
 				ch, ok := s.channels[string(msg.StartWatchingLedgerChannelReq.State.Id)]
+				s.channelsMtx.Unlock()
 				if ok {
-					fmt.Printf("\n(*) Received: State version %v (final=%v) for channel 0x%x",
-						msg.StartWatchingLedgerChannelReq.State.Version,
-						msg.StartWatchingLedgerChannelReq.State.IsFinal,
-						msg.StartWatchingLedgerChannelReq.State.Id)
 					ch <- msg.StartWatchingLedgerChannelReq
 					return
 				}
 
 				ch = make(chan *pb.StartWatchingLedgerChannelReq, 10)
+				s.channelsMtx.Lock()
 				s.channels[string(msg.StartWatchingLedgerChannelReq.State.Id)] = ch
+				s.channelsMtx.Unlock()
 
 				receiveState := func() (*pb.StartWatchingLedgerChannelReq, error) {
 					update, ok := <-ch
