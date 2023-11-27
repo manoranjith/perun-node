@@ -21,6 +21,7 @@ syntax = "proto3";
 package pb;
 
 import "funding_service.proto";
+import "watching_service.proto";
 
 // Option go_package is to specify the exact path where the generated go code should reside.
 option go_package = ".;pb";
@@ -36,5 +37,7 @@ message APIMessage{
       RegisterResp register_resp = 4;
       WithdrawReq withdraw_req = 5;
       WithdrawResp withdraw_resp = 6;
+      StartWatchingLedgerChannelReq start_watching_ledger_channel_req = 7;
+      StopWatchingReq stop_watching_req = 8;
     }
 }

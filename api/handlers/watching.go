@@ -18,6 +18,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pkg/errors"
 	pchannel "perun.network/go-perun/channel"
@@ -43,6 +44,12 @@ func (a *WatchingHandler) StartWatchingLedgerChannel( //nolint: funlen, gocognit
 	sendAdjEvent func(resp *pb.StartWatchingLedgerChannelResp) error,
 	receiveState func() (req *pb.StartWatchingLedgerChannelReq, err error),
 ) error {
+
+	fmt.Printf("\nReceived: Start watching channel 0x%x version %v (final=%v)",
+		req.Params.Id,
+		req.State.Version,
+		req.State.IsFinal)
+
 	var err error
 	sess, err := a.N.GetSession(req.SessionID)
 	if err != nil {
@@ -58,6 +65,8 @@ func (a *WatchingHandler) StartWatchingLedgerChannel( //nolint: funlen, gocognit
 	if err != nil {
 		return errors.WithMessage(err, "start watching")
 	}
+
+	fmt.Printf("\nWatching started.")
 
 	// This stream is anyways closed when StopWatching is called for.
 	// Hence, that will act as the exit condition for the loop.
@@ -88,12 +97,19 @@ func (a *WatchingHandler) StartWatchingLedgerChannel( //nolint: funlen, gocognit
 	var tx *pchannel.Transaction
 StatesPubLoop:
 	for {
+		fmt.Printf("\nStates pub started")
+		defer fmt.Printf("\nStates pub ended")
 
 		req, err = receiveState()
+		fmt.Printf("\nReceived: State version %v (final=%v) for channel 0x%x",
+			req.State.Version,
+			req.State.IsFinal,
+			req.State.Id)
 		if err != nil {
 			err = errors.WithMessage(err, "reading published states pub data")
 			break StatesPubLoop
 		}
+
 		tx, err = transactionFromProtoLedgerChReq(req)
 		if err != nil {
 			err = errors.WithMessage(err, "parsing published states pub data")
@@ -120,6 +136,8 @@ func (a *WatchingHandler) StopWatching(ctx context.Context, req *pb.StopWatching
 		}
 	}
 
+	fmt.Printf("\nReceived: Stop watching channel 0x%x", req.ChID)
+
 	sess, err := a.N.GetSession(req.SessionID)
 	if err != nil {
 		return errResponse(err), nil
@@ -130,6 +148,8 @@ func (a *WatchingHandler) StopWatching(ctx context.Context, req *pb.StopWatching
 	if err2 != nil {
 		return errResponse(err), nil
 	}
+
+	fmt.Printf("\nWatching stopped.")
 
 	return &pb.StopWatchingResp{Error: nil}, nil
 }

@@ -19,6 +19,7 @@ package peruntcp
 import (
 	"context"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -27,6 +28,7 @@ import (
 	pchannel "perun.network/go-perun/channel"
 	"perun.network/go-perun/log"
 	"polycry.pt/poly-go/sync"
+	psync "polycry.pt/poly-go/sync"
 
 	"github.com/hyperledger-labs/perun-node"
 	"github.com/hyperledger-labs/perun-node/api/grpc/pb"
@@ -39,9 +41,13 @@ type Server struct {
 
 	server net.Listener
 
-	fundingHandler *handlers.FundingHandler
+	fundingHandler  *handlers.FundingHandler
+	watchingHandler *handlers.WatchingHandler
 
 	sessionID string // For timebeing use hard-coded session-id
+
+	channels    map[string](chan *pb.StartWatchingLedgerChannelReq)
+	channelsMtx psync.Mutex
 }
 
 // ServeFundingWatchingAPI starts a payment channel API server that listens for incoming grpc
@@ -57,6 +63,10 @@ func ServeFundingWatchingAPI(n perun.NodeAPI, port string) error {
 		N:          n,
 		Subscribes: make(map[string]map[pchannel.ID]pchannel.AdjudicatorSubscription),
 	}
+	watchingServer := &handlers.WatchingHandler{
+		N:          n,
+		Subscribes: make(map[string]map[pchannel.ID]pchannel.AdjudicatorSubscription),
+	}
 
 	tcpServer, err := net.Listen("tcp", port)
 	if err != nil {
@@ -64,9 +74,12 @@ func ServeFundingWatchingAPI(n perun.NodeAPI, port string) error {
 	}
 
 	s := &Server{
-		server:         tcpServer,
-		fundingHandler: fundingServer,
-		sessionID:      sessionID,
+		server:          tcpServer,
+		fundingHandler:  fundingServer,
+		watchingHandler: watchingServer,
+		sessionID:       sessionID,
+
+		channels: make(map[string](chan *pb.StartWatchingLedgerChannelReq), 10),
 	}
 	s.OnCloseAlways(func() { tcpServer.Close() })
 
@@ -88,15 +101,17 @@ func (s *Server) Handle(conn io.ReadWriteCloser) {
 
 	for {
 		msg, err := recvMsg(conn)
+		// log.Info("received message", msg, err)
 		if err != nil {
-			log.Errorf("decoding message failed: %v", err)
+			log.Errorf("%+v", msg)
+			log.Errorf("here decoding message failed: %v", err)
 			return
 		}
 
 		go func() {
 			switch msg := msg.GetMsg().(type) {
 			case *pb.APIMessage_FundReq:
-				log.Warnf("Server: Got Funding request: %+v", msg)
+				log.Warnf("Server: Got Funding request")
 				// TODO: error is always nil. Remove that return argument.
 				msg.FundReq.SessionID = s.sessionID
 				fundResp, err := s.fundingHandler.Fund(context.Background(), msg.FundReq)
@@ -107,7 +122,7 @@ func (s *Server) Handle(conn io.ReadWriteCloser) {
 					FundResp: fundResp}})
 
 			case *pb.APIMessage_RegisterReq:
-				log.Warnf("Server: Got Registering request: %+v", msg)
+				log.Warnf("Server: Got Registering request")
 				// TODO: error is always nil. Remove that return argument.
 				msg.RegisterReq.SessionID = s.sessionID
 				registerResp, err := s.fundingHandler.Register(context.Background(), msg.RegisterReq)
@@ -118,7 +133,7 @@ func (s *Server) Handle(conn io.ReadWriteCloser) {
 					RegisterResp: registerResp}})
 
 			case *pb.APIMessage_WithdrawReq:
-				log.Warnf("Server: Got Withdrawing request: %+v", msg)
+				log.Warnf("Server: Got Withdrawing request")
 				// TODO: error is always nil. Remove that return argument.
 				msg.WithdrawReq.SessionID = s.sessionID
 				withdrawResp, err := s.fundingHandler.Withdraw(context.Background(), msg.WithdrawReq)
@@ -127,6 +142,46 @@ func (s *Server) Handle(conn io.ReadWriteCloser) {
 				}
 				sendMsg(&m, conn, &pb.APIMessage{Msg: &pb.APIMessage_WithdrawResp{
 					WithdrawResp: withdrawResp}})
+			case *pb.APIMessage_StartWatchingLedgerChannelReq:
+				msg.StartWatchingLedgerChannelReq.SessionID = s.sessionID
+				log.Warnf("Server: Got Watching request")
+				s.channelsMtx.Lock()
+				defer s.channelsMtx.Unlock()
+
+				ch, ok := s.channels[string(msg.StartWatchingLedgerChannelReq.State.Id)]
+				if ok {
+					fmt.Printf("\n(*) Received: State version %v (final=%v) for channel 0x%x",
+						msg.StartWatchingLedgerChannelReq.State.Version,
+						msg.StartWatchingLedgerChannelReq.State.IsFinal,
+						msg.StartWatchingLedgerChannelReq.State.Id)
+					ch <- msg.StartWatchingLedgerChannelReq
+					return
+				}
+
+				ch = make(chan *pb.StartWatchingLedgerChannelReq, 10)
+				s.channels[string(msg.StartWatchingLedgerChannelReq.State.Id)] = ch
+
+				receiveState := func() (*pb.StartWatchingLedgerChannelReq, error) {
+					update, ok := <-ch
+					if !ok {
+						return nil, errors.New("subscription closed")
+					}
+					return update, nil
+				}
+
+				// its a no-op, as we don't intend to send states now.
+				sendAdjEvent := func(resp *pb.StartWatchingLedgerChannelResp) error {
+					return nil
+				}
+
+				s.watchingHandler.StartWatchingLedgerChannel(
+					msg.StartWatchingLedgerChannelReq,
+					sendAdjEvent,
+					receiveState)
+
+			case *pb.APIMessage_StopWatchingReq:
+				msg.StopWatchingReq.SessionID = s.sessionID
+				s.watchingHandler.StopWatching(context.Background(), msg.StopWatchingReq)
 
 			}
 		}()

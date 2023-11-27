@@ -45,19 +45,26 @@ func (a *FundingHandler) Fund(ctx context.Context, req *pb.FundReq) (*pb.FundRes
 		}
 	}
 
+	fmt.Printf("\nReceived: Fund for channel 0x%x", req.Params.Id)
+
 	sess, apiErr := a.N.GetSession(req.SessionID)
 	if apiErr != nil {
 		return errResponse(apiErr), nil
 	}
+	// fmt.Println("got session id")
 	fundingReq, err := pb.ToFundingReq(req)
+	// fmt.Println("fund request", fundingReq, err)
 	if err != nil {
 		return errResponse(perun.NewAPIErrUnknownInternal(err)), nil
 	}
 
 	err = sess.Fund(ctx, fundingReq)
+	// fmt.Println("fund response", err)
 	if err != nil {
 		return errResponse(perun.NewAPIErrUnknownInternal(err)), nil
 	}
+
+	fmt.Printf("\nChannel funded.")
 
 	return &pb.FundResp{
 		Error: nil,
@@ -119,6 +126,11 @@ func (a *FundingHandler) Register(ctx context.Context, req *pb.RegisterReq) (*pb
 		}
 	}
 
+	fmt.Printf("\nReceived: Register channel 0x%x version %v (final=%v)",
+		req.AdjReq.Params.Id,
+		req.AdjReq.Tx.State.Version,
+		req.AdjReq.Tx.State.IsFinal)
+
 	sess, err := a.N.GetSession(req.SessionID)
 	if err != nil {
 		return errResponse(err), nil
@@ -140,6 +152,8 @@ func (a *FundingHandler) Register(ctx context.Context, req *pb.RegisterReq) (*pb
 	if err2 != nil {
 		return errResponse(perun.NewAPIErrUnknownInternal(err2)), nil
 	}
+
+	fmt.Printf("\nChannel registered.")
 
 	return &pb.RegisterResp{
 		Error: nil,

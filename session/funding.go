@@ -29,10 +29,13 @@ import (
 // On-chain wallet can be direcly used without additional locks,
 // because the methods on wallet are concurrency safe by themselves.
 func (s *Session) Fund(ctx context.Context, req pchannel.FundingReq) error {
+	s.WithField("method", "Fund").
+		Infof("\nReceived request with params %+v", req)
 	err := s.funder.Fund(ctx, req)
 	if err == nil {
 		s.user.OnChain.Wallet.IncrementUsage(s.user.OnChain.Addr)
 	}
+	s.WithField("method", "Fund").Infof("error: %v", err)
 	return err
 }
 
