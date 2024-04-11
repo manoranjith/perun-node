@@ -1,0 +1,28 @@
+user:
+    alias: alice
+    onchainaddr: 0x8450c0055cB180C7C37A25866132A740b812937B
+    onchainwallet:
+        keystorepath: alice/keystore
+        password: ""
+    partaddrs: []
+    offchainaddr: 0xa617fa2cc5eC8d72d4A60b9F424677e74E6bef68
+    offchainwallet:
+        keystorepath: alice/keystore
+        password: ""
+    commaddr: 192.168.0.127:35721
+    commtype: tcp
+idprovidertype: local
+idproviderurl: alice/idprovider.yaml
+chainurl: ws://127.0.0.1:8545
+chainid: 1337
+chainconntimeout: 10s
+onchaintxtimeout: 1m0s
+responsetimeout: 10s
+databasedir: alice/database
+peerreconntimeout: 20s
+fundingtype: local
+fundingurl: ""
+fundingapikey: ""
+watchertype: local
+watcherurl: ""
+watcherapikey: ""
